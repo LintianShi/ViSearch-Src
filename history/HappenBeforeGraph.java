@@ -40,7 +40,7 @@ public class HappenBeforeGraph implements Iterable<HBGNode>, Cloneable {
                 HBGNode node = list.get(i).clone();
                 this.nodes.put(node.getId(), node);
                 if (i == 0) {
-                    startNodes.add(list.get(0));
+                    startNodes.add(node);
                 } else {
                     node.setPrev(lastNode);
                     lastNode.setNext(node);

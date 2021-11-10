@@ -12,7 +12,7 @@ public class MultiThreadSearch {
     private SearchConfiguration configuration;
     private static HappenBeforeGraph happenBeforeGraph;
     private List<SearchThread> searchThreads = new ArrayList<>();
-    private int searchThreadNum = 4;
+    private int searchThreadNum = 16;
 
     public MultiThreadSearch(HappenBeforeGraph happenBeforeGraph, SearchConfiguration configuration) {
         MultiThreadSearch.happenBeforeGraph = happenBeforeGraph;

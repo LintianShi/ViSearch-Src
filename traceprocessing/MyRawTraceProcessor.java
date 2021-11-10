@@ -4,9 +4,8 @@ import datatype.RiakSet;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.List;
 
-public class RiakTraceProcessor extends TraceProcessor {
+public class MyRawTraceProcessor extends TraceProcessor {
     protected void load(String filepath) {
         try {
             if (filepath.endsWith(".trc")) {
@@ -30,6 +29,6 @@ public class RiakTraceProcessor extends TraceProcessor {
     }
 
     public static void main(String[] args) {
-        new RiakTraceProcessor().generateProgram("test.trc", new RiakSet());
+        new MyRawTraceProcessor().generateProgram("test.trc", new RiakSet());
     }
 }

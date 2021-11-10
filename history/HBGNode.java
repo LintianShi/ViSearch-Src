@@ -69,6 +69,7 @@ public class HBGNode implements Serializable {
         return getId();
     }
 
+    @Override
     public HBGNode clone() {
         return new HBGNode(this.invocation, this.getId());
     }

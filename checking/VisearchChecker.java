@@ -3,7 +3,7 @@ package checking;
 import arbitration.VisibilityType;
 import datatype.DataTypeFactory;
 import history.HappenBeforeGraph;
-import traceprocessing.RiakTraceProcessor;
+import traceprocessing.MyRawTraceProcessor;
 import validation.*;
 import static net.sourceforge.argparse4j.impl.Arguments.storeTrue;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -48,7 +48,7 @@ public class VisearchChecker {
                                                                 .setEnablePrickOperation(false)
                                                                 .setFindAllAbstractExecution(false)
                                                                 .setVisibilityLimit(-1)
-                                                                .setQueueLimit(20)
+                                                                .setQueueLimit(32)
                                                                 .setSearchMode(1)
                                                                 .setSearchLimit(-1)
                                                                 .build();
@@ -69,7 +69,7 @@ public class VisearchChecker {
     }
 
     protected HappenBeforeGraph load(String filename) {
-        RiakTraceProcessor rp = new RiakTraceProcessor();
+        MyRawTraceProcessor rp = new MyRawTraceProcessor();
         HappenBeforeGraph happenBeforeGraph = rp.generateProgram(filename,  new DataTypeFactory().getDataType(adt)).generateHappenBeforeGraph();
         return happenBeforeGraph;
     }

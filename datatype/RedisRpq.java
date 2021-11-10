@@ -62,6 +62,14 @@ public class RedisRpq extends AbstractDataType {
         }
     }
 
+    @Override
+    public boolean isReadCluster(Invocation invocation) {
+        if (invocation.getMethodName().equals("score")) {
+            return true;
+        }
+        return false;
+    }
+
     public Invocation generateInvocation(Record record) {
         Invocation invocation = new Invocation();
         invocation.setRetValue(record.getRetValue());

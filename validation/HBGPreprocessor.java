@@ -5,13 +5,12 @@ import datatype.AbstractDataType;
 import datatype.DataTypeFactory;
 import history.HBGNode;
 import history.HappenBeforeGraph;
-import traceprocessing.RiakTraceProcessor;
+import traceprocessing.MyRawTraceProcessor;
 import util.Pair;
 import util.PairOfPair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class HBGPreprocessor {
@@ -99,10 +98,10 @@ public class HBGPreprocessor {
 //                }
 
                 SearchConfiguration configuration = new SearchConfiguration.Builder()
-                                                            .setAdt("set")
+                                                            .setAdt("rpq")
                                                             .setFindAllAbstractExecution(true)
                                                             .setEnablePrickOperation(false)
-                                                            .setVisibilityType(VisibilityType.CAUSAL)
+                                                            .setVisibilityType(VisibilityType.BASIC)
                                                             .setEnableOutputSchedule(false)
                                                             .setEnableIncompatibleRelation(false)
                                                             .build();
@@ -142,8 +141,8 @@ public class HBGPreprocessor {
     }
 
     public static void main(String args[]) throws Exception {
-        File baseFile = new File("D:\\set311_with_size\\result");
-        AbstractDataType adt = new DataTypeFactory().getDataType("set");
+        File baseFile = new File("D:\\rpq_rwf\\result");
+        AbstractDataType adt = new DataTypeFactory().getDataType("rpq");
         if (baseFile.isFile() || !baseFile.exists()) {
             throw new FileNotFoundException();
         }
@@ -155,7 +154,7 @@ public class HBGPreprocessor {
                 return;
             }
             System.out.println(file.toString());
-            RiakTraceProcessor rp = new RiakTraceProcessor();
+            MyRawTraceProcessor rp = new MyRawTraceProcessor();
             HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), adt).generateHappenBeforeGraph();
             new HBGPreprocessor().preprocess(happenBeforeGraph, adt);
         }
