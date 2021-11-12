@@ -229,25 +229,25 @@ public class VisearchChecker {
         try {
             res = parser.parseArgs(args);
             System.out.println(res);
-            return;
-            // String dataType = res.getString("type");
-            // String filepath = res.getString("filepath");
-            // int threadNum = res.getInt("parallel");
-            // VisearchChecker checker = new VisearchChecker(dataType, threadNum);
-            // if (res.getBoolean("dataset")) {
-            //     if (res.getBoolean("measure")) {
-            //         checker.measureDataSet(filepath);
-            //     } else {
-            //         checker.testDataSet(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
-            //     }
-            // } else {
-            //     if (res.getBoolean("measure")) {
-            //         checker.measureVisibility(filepath);
-            //     } else {
-            //         checker.testTrace(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
-            //     }
-            // }
-            // System.out.println(res);
+            
+            String dataType = res.getString("type");
+            String filepath = res.getString("filepath");
+            int threadNum = res.getInt("parallel");
+            VisearchChecker checker = new VisearchChecker(dataType, threadNum);
+            if (res.getBoolean("dataset")) {
+                if (res.getBoolean("measure")) {
+                    checker.measureDataSet(filepath);
+                } else {
+                    checker.testDataSet(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
+                }
+            } else {
+                if (res.getBoolean("measure")) {
+                    checker.measureVisibility(filepath);
+                } else {
+                    checker.testTrace(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
+                }
+            }
+            System.out.println(res);
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
