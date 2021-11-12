@@ -6,6 +6,7 @@ import history.HappenBeforeGraph;
 import traceprocessing.MyRawTraceProcessor;
 import validation.*;
 import static net.sourceforge.argparse4j.impl.Arguments.storeTrue;
+import static net.sourceforge.argparse4j.impl.Arguments.storeFalse;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -19,10 +20,11 @@ import java.util.List;
 
 public class VisearchChecker {
     private String adt;
-    private MinimalVisSearch vfs;
+    private int threadNum = 16;
 
-    public VisearchChecker(String adt) {
+    public VisearchChecker(String adt, int threadNum) {
         this.adt = adt;
+        this.threadNum = threadNum;
     }
 
     public boolean normalCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
@@ -30,9 +32,9 @@ public class VisearchChecker {
         if (enablePreprocess) {
             preprocess(happenBeforeGraph);
         }
-        this.vfs = new MinimalVisSearch(configuration);
-        this.vfs.init(happenBeforeGraph);
-        return this.vfs.checkConsistency();
+        MinimalVisSearch vfs = new MinimalVisSearch(configuration);
+        vfs.init(happenBeforeGraph);
+        return vfs.checkConsistency();
     }
 
     public boolean multiThreadCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
@@ -60,7 +62,7 @@ public class VisearchChecker {
             return result;
         }
 
-        MultiThreadSearch multiThreadSearch = new MultiThreadSearch(happenBeforeGraph, configuration);
+        MultiThreadSearch multiThreadSearch = new MultiThreadSearch(happenBeforeGraph, configuration, threadNum);
         return multiThreadSearch.startSearch(states);
     }
 
@@ -150,6 +152,9 @@ public class VisearchChecker {
                 System.out.println(i + ":" + file + ":" + result);
             }
             i++;
+            if (i % 10000 == 0) {
+                System.out.println("Processing " + df.format(new Date()));
+            }
         }
         System.out.println("Finishing " + df.format(new Date()));
     }
@@ -206,37 +211,43 @@ public class VisearchChecker {
         parser.addArgument("-f", "--filepath").help(". File path to check")
                 .type(String.class)
                 .dest("filepath");
+        parser.addArgument("-p", "--parallel").help(". Number of parallel threads")
+                .type(Integer.class)
+                .dest("parallel")
+                .setDefault(16);
         parser.addArgument("-v", "--vis").help(". Visibility Level")
                 .type(String.class)
                 .dest("vis")
                 .setDefault("complete");
         parser.addArgument("--measure").help(". Enable measure")
                 .dest("measure")
-                .action(storeTrue());
+                .action(storeFalse());
         parser.addArgument("--dataset").help(". Checking for data set")
                 .dest("dataset")
-                .action(storeTrue());
+                .action(storeFalse());
         Namespace res;
         try {
             res = parser.parseArgs(args);
             System.out.println(res);
-            String dataType = res.getString("type");
-            String filepath = res.getString("filepath");
-            VisearchChecker checker = new VisearchChecker(dataType);
-            if (res.getBoolean("dataset")) {
-                if (res.getBoolean("measure")) {
-                    checker.measureDataSet(filepath);
-                } else {
-                    checker.testDataSet(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
-                }
-            } else {
-                if (res.getBoolean("measure")) {
-                    checker.measureVisibility(filepath);
-                } else {
-                    checker.testTrace(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
-                }
-            }
-            System.out.println(res);
+            return;
+            // String dataType = res.getString("type");
+            // String filepath = res.getString("filepath");
+            // int threadNum = res.getInt("parallel");
+            // VisearchChecker checker = new VisearchChecker(dataType, threadNum);
+            // if (res.getBoolean("dataset")) {
+            //     if (res.getBoolean("measure")) {
+            //         checker.measureDataSet(filepath);
+            //     } else {
+            //         checker.testDataSet(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
+            //     }
+            // } else {
+            //     if (res.getBoolean("measure")) {
+            //         checker.measureVisibility(filepath);
+            //     } else {
+            //         checker.testTrace(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
+            //     }
+            // }
+            // System.out.println(res);
         } catch (ArgumentParserException e) {
             parser.handleError(e);
             System.exit(1);
