@@ -12,6 +12,7 @@ public class MinimalVisSearch {
     private SearchStatePriorityQueue stateQueue;
 //    private LinkedBlockingDeque<SearchState> stateQueue = new LinkedBlockingDeque<>();
     private static HappenBeforeGraph happenBeforeGraph;
+    private RuleTable ruleTable = null;
     private SearchConfiguration configuration;
     private int stateExplored = 0;
     private HashMap<HBGNode, Integer> prickOperationCounter = new HashMap<>();
@@ -85,7 +86,7 @@ public class MinimalVisSearch {
                         }
                     }
                     state.pruneVisibility(subset);
-                    List<SearchState> list =state.linExtent();
+                    List<SearchState> list =state.linExtent(ruleTable);
                     stateQueue.offer(state);
                     for (SearchState newState : list) {
                         stateQueue.offer(newState);
@@ -141,6 +142,10 @@ public class MinimalVisSearch {
                 prickOperationCounter.put(prickOperation, -1);
             }
         }
+    }
+
+    public void setRuleTable(RuleTable ruleTable) {
+        this.ruleTable = ruleTable;
     }
 
     public List<SearchState> getResults() {

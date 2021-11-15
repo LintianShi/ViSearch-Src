@@ -5,7 +5,6 @@ import history.HBGNode;
 import history.HappenBeforeGraph;
 import arbitration.Linearization;
 import arbitration.LinVisibility;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import util.Pair;
 
 import java.io.Serializable;
@@ -38,8 +37,18 @@ public class SearchState implements Serializable, Comparable<SearchState> {
         return happenBeforeGraph.size() == linearization.size() && happenBeforeGraph.size() == visibility.size();
     }
 
+    public List<SearchState> linExtent(RuleTable ruleTable) {
+        List<Linearization> newLins = linearization.extend(ruleTable);
+        List<SearchState> newStates = new ArrayList<>();
+        for (int i = 0; i < newLins.size(); i++) {
+            SearchState newState = new SearchState(newLins.get(i), (LinVisibility) visibility.clone());
+            newStates.add(newState);
+        }
+        return newStates;
+    }
+
     public List<SearchState> linExtent() {
-        List<Linearization> newLins = linearization.extendLin();
+        List<Linearization> newLins = linearization.extend();
         List<SearchState> newStates = new ArrayList<>();
         for (int i = 0; i < newLins.size(); i++) {
             SearchState newState = new SearchState(newLins.get(i), (LinVisibility) visibility.clone());

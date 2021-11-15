@@ -29,18 +29,21 @@ public class VisearchChecker {
 
     public boolean normalCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
         HappenBeforeGraph happenBeforeGraph = load(input);
+        RuleTable ruleTable = null;
         if (enablePreprocess) {
-            preprocess(happenBeforeGraph);
+            ruleTable = preprocess(happenBeforeGraph);
         }
         MinimalVisSearch vfs = new MinimalVisSearch(configuration);
+        vfs.setRuleTable(ruleTable);
         vfs.init(happenBeforeGraph);
         return vfs.checkConsistency();
     }
 
     public boolean multiThreadCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
         HappenBeforeGraph happenBeforeGraph = load(input);
+        RuleTable ruleTable = null;
         if (enablePreprocess) {
-            preprocess(happenBeforeGraph);
+            ruleTable = preprocess(happenBeforeGraph);
         }
         SearchConfiguration subConfiguration = new SearchConfiguration.Builder()
                                                                 .setVisibilityType(configuration.getVisibilityType())
@@ -63,11 +66,13 @@ public class VisearchChecker {
         }
 
         MultiThreadSearch multiThreadSearch = new MultiThreadSearch(happenBeforeGraph, configuration, threadNum);
+        multiThreadSearch.setRuleTable(ruleTable);
         return multiThreadSearch.startSearch(states);
     }
 
-    protected void preprocess(HappenBeforeGraph happenBeforeGraph) {
-        new HBGPreprocessor().preprocess(happenBeforeGraph, new DataTypeFactory().getDataType(adt));
+    protected RuleTable preprocess(HappenBeforeGraph happenBeforeGraph) {
+        RuleTable ruleTable = new HBGPreprocessor().preprocess(happenBeforeGraph, adt);
+        return ruleTable;
     }
 
     protected HappenBeforeGraph load(String filename) {
@@ -170,9 +175,9 @@ public class VisearchChecker {
                 .build();
         Boolean result;
         if (enableMulti) {
-            result = multiThreadCheck(filename, configuration, false);
+            result = multiThreadCheck(filename, configuration, true);
         } else {
-            result = normalCheck(filename, configuration, false);
+            result = normalCheck(filename, configuration, true);
         }
         return result;
     }

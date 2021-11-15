@@ -1,5 +1,6 @@
 package history;
 
+import com.google.common.collect.HashMultimap;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.*;

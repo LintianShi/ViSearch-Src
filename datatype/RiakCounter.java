@@ -2,7 +2,6 @@ package datatype;
 
 import history.Invocation;
 import traceprocessing.Record;
-import validation.OperationTypes;
 
 public class RiakCounter extends AbstractDataType {
     private Integer data;

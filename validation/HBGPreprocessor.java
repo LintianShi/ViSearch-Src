@@ -1,6 +1,8 @@
 package validation;
 
 import arbitration.VisibilityType;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import datatype.AbstractDataType;
 import datatype.DataTypeFactory;
 import history.HBGNode;
@@ -83,8 +85,9 @@ public class HBGPreprocessor {
 //    }
 
 
-    public void preprocess(HappenBeforeGraph happenBeforeGraph, AbstractDataType adt) {
-        List<PairOfPair> coccurrenceRelations = new ArrayList<>();
+    public RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, String dataType) {
+        AbstractDataType adt = new DataTypeFactory().getDataType(dataType);
+        HashMultimap<HBGNode, HBGNode> linRules = HashMultimap.create();
         for (HBGNode node : happenBeforeGraph) {
             if (adt.isReadCluster(node.getInvocation())) {
 //                System.out.println(node.toString());
@@ -98,7 +101,7 @@ public class HBGPreprocessor {
 //                }
 
                 SearchConfiguration configuration = new SearchConfiguration.Builder()
-                                                            .setAdt("rpq")
+                                                            .setAdt(dataType)
                                                             .setFindAllAbstractExecution(true)
                                                             .setEnablePrickOperation(false)
                                                             .setVisibilityType(VisibilityType.BASIC)
@@ -108,10 +111,10 @@ public class HBGPreprocessor {
                 MinimalVisSearch subSearch = new MinimalVisSearch(configuration);
                 subSearch.init(subHBGraph);
                 subSearch.checkConsistency();
-                if (subSearch.getResults().size() == 0) {
-                    System.out.println("no abstract execution");
-                    continue;
-                }
+//                if (subSearch.getResults().size() == 0) {
+//                    System.out.println("no abstract execution");
+//                    continue;
+//                }
 
                 List<List<Pair>> hbs = new ArrayList<>();
                 for (SearchState state : subSearch.getResults()) {
@@ -120,8 +123,10 @@ public class HBGPreprocessor {
 
                 List<Pair> commonHBs = extractCommonHBRelation(hbs);
                 for (Pair pair : commonHBs) {
-                    System.out.printf("%s -> %s\n", happenBeforeGraph.get(pair.left).toString(), happenBeforeGraph.get(pair.right).toString());
+//                    System.out.printf("%s -> %s\n", happenBeforeGraph.get(pair.left).toString(), happenBeforeGraph.get(pair.right).toString());
+                    linRules.put(happenBeforeGraph.get(pair.right), happenBeforeGraph.get(pair.left));
                 }
+
 //                addHBRelations(happenBeforeGraph, commonHBs);
 //
 //                List<PairOfPair> subCoccurrenceRelations = removeCommonRelations(extractCooccurrenceHBRelation(hbs), commonHBs);
@@ -137,7 +142,8 @@ public class HBGPreprocessor {
         }
 
 //        Multimap<ImmutablePair<Integer, Integer>, ImmutablePair<Integer, Integer>> ruleTable = generateRuleTable(incompatibleRelations);
-//        happenBeforeGraph.setRuleTable(ruleTable);
+        RuleTable ruleTable = new RuleTable(linRules);
+        return ruleTable;
     }
 
     public static void main(String args[]) throws Exception {
@@ -153,10 +159,10 @@ public class HBGPreprocessor {
             if (i == 1000) {
                 return;
             }
-            System.out.println(file.toString());
+//            System.out.println(file.toString());
             MyRawTraceProcessor rp = new MyRawTraceProcessor();
             HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), adt).generateHappenBeforeGraph();
-            new HBGPreprocessor().preprocess(happenBeforeGraph, adt);
+            new HBGPreprocessor().preprocess(happenBeforeGraph, "rpq");
         }
     }
 }

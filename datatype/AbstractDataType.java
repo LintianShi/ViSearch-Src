@@ -4,7 +4,6 @@ import history.HBGNode;
 import history.HappenBeforeGraph;
 import history.Invocation;
 import traceprocessing.Record;
-import validation.OperationTypes;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

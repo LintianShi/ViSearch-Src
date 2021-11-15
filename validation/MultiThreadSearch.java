@@ -12,6 +12,7 @@ public class MultiThreadSearch {
     private SearchConfiguration configuration;
     private static HappenBeforeGraph happenBeforeGraph;
     private List<SearchThread> searchThreads = new ArrayList<>();
+    private RuleTable ruleTable = null;
     private int searchThreadNum = 16;
 
     public MultiThreadSearch(HappenBeforeGraph happenBeforeGraph, SearchConfiguration configuration, int threadNum) {
@@ -31,6 +32,7 @@ public class MultiThreadSearch {
             }
             MinimalVisSearch visSearch = new MinimalVisSearch(configuration);
             visSearch.init(happenBeforeGraph, initStates);
+            visSearch.setRuleTable(ruleTable);
             searchThreads.add(new SearchThread(visSearch, searchLock));
         }
 
@@ -42,6 +44,10 @@ public class MultiThreadSearch {
             search.stop();
         }
         return searchLock.getResult();
+    }
+
+    public void setRuleTable(RuleTable ruleTable) {
+        this.ruleTable = ruleTable;
     }
 }
 

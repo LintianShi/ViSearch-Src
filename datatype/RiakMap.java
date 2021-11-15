@@ -1,10 +1,7 @@
 package datatype;
 
-import history.HBGNode;
-import history.HappenBeforeGraph;
 import history.Invocation;
 import traceprocessing.Record;
-import validation.OperationTypes;
 
 import java.util.*;
 

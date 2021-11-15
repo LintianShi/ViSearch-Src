@@ -2,7 +2,6 @@ package datatype;
 
 import history.Invocation;
 import traceprocessing.Record;
-import validation.OperationTypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;

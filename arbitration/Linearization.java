@@ -2,6 +2,7 @@ package arbitration;
 
 import history.HBGNode;
 import history.HappenBeforeGraph;
+import validation.RuleTable;
 
 import java.io.Serializable;
 import java.util.*;
@@ -92,7 +93,24 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
         return null;
     }
 
-    public List<Linearization> extendLin() {
+    public List<Linearization> extend(RuleTable ruleTable) {
+        List<Linearization> extentLins = new ArrayList<>();
+        for (int i = 0; i < front.size(); i++) {
+            HBGNode node = front.get(i);
+            if (node == null) {
+                continue;
+            }
+            if (ruleTable == null || ruleTable.linearizationFilter(this, node)) {
+                Linearization linearization = (Linearization) this.clone();
+                linearization.add(node);
+                linearization.front.set(i, node.getNext());
+                extentLins.add(linearization);
+            }
+        }
+        return extentLins;
+    }
+
+    public List<Linearization> extend() {
         List<Linearization> extentLins = new ArrayList<>();
         for (int i = 0; i < front.size(); i++) {
             HBGNode node = front.get(i);
