@@ -30,7 +30,7 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
     }
 
     public boolean contains(HBGNode node) {
-        return lin.contains(node);
+        return contains(node.getId());
     }
 
     public boolean contains(Integer id) {

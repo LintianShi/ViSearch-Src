@@ -36,18 +36,6 @@ public class MinimalVisSearch {
         }
     }
 
-//    private void addTempHBRelations(Collection<ImmutablePair<Integer, Integer>> tempRelations) {
-//        for (ImmutablePair<Integer, Integer> pair : tempRelations) {
-//            happenBeforeGraph.addHBRelation(pair.right, pair.left);
-//        }
-//    }
-//
-//    private void removeTempHBRelations(Collection<ImmutablePair<Integer, Integer>> tempRelations) {
-//        for (ImmutablePair<Integer, Integer> pair : tempRelations) {
-//            happenBeforeGraph.removeHBRelation(pair.right, pair.left);
-//        }
-//    }
-
     public void init(HappenBeforeGraph happenBeforeGraph, SearchState initState) {
         SearchState.happenBeforeGraph = happenBeforeGraph;
         MinimalVisSearch.happenBeforeGraph = happenBeforeGraph;
@@ -69,10 +57,6 @@ public class MinimalVisSearch {
                 && (configuration.getQueueLimit() == -1 || stateQueue.size() < configuration.getQueueLimit())) {
 
             SearchState state = stateQueue.poll();
-//            if (configuration.isEnableIncompatibleRelation()) {
-//                addTempHBRelations(state.getTempHBRelations());
-//            }
-
             List<HBGNode> subset = null;
             while ((subset = state.nextVisibility()) != null && !exit) {
                 stateExplored++;
@@ -96,9 +80,6 @@ public class MinimalVisSearch {
                     handlePrickOperation(state);
                }
             }
-//            if (configuration.isEnableIncompatibleRelation()) {
-//                removeTempHBRelations(state.getTempHBRelations());
-//            }
         }
 //        System.out.println(stateExplored);
         return false;
