@@ -1,5 +1,6 @@
 package validation;
 
+import checking.VisearchChecker;
 import history.HappenBeforeGraph;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ public class MultiThreadSearch {
 
     public boolean startSearch(List<SearchState> startStates) {
         int stateNum = startStates.size();
+        System.out.println(stateNum);
         SearchLock searchLock = new SearchLock(searchThreadNum);
         for (int i = 0; i < searchThreadNum; i++) {
             List<SearchState> initStates = new LinkedList<>();
@@ -48,6 +50,11 @@ public class MultiThreadSearch {
 
     public void setRuleTable(RuleTable ruleTable) {
         this.ruleTable = ruleTable;
+    }
+
+    public static void main(String[] args) throws Exception {
+        VisearchChecker checker = new VisearchChecker("rpq", 4);
+        System.out.println(checker.measureVisibility("D:\\rpq_rwf\\result\\rwf_rpq_default_1636020453043638239.trc"));
     }
 }
 
@@ -92,10 +99,8 @@ class SearchThread implements Runnable {
         boolean result = visSearch.checkConsistency();
         if (result) {
             searchLock.find();
-            searchLock.finish();
-        } else {
-            searchLock.finish();
         }
+        searchLock.finish();
     }
 
     public void stop() {

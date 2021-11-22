@@ -5,8 +5,6 @@ import datatype.DataTypeFactory;
 import history.HappenBeforeGraph;
 import traceprocessing.MyRawTraceProcessor;
 import validation.*;
-import static net.sourceforge.argparse4j.impl.Arguments.storeTrue;
-import static net.sourceforge.argparse4j.impl.Arguments.storeFalse;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
@@ -18,9 +16,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static net.sourceforge.argparse4j.impl.Arguments.*;
+
 public class VisearchChecker {
     private String adt;
-    private int threadNum = 16;
+    private int threadNum = 8;
 
     public VisearchChecker(String adt, int threadNum) {
         this.adt = adt;
@@ -40,6 +40,10 @@ public class VisearchChecker {
     }
 
     public boolean multiThreadCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
+        if (threadNum == 1) {
+            return normalCheck(input, configuration, enablePreprocess);
+        }
+
         HappenBeforeGraph happenBeforeGraph = load(input);
         RuleTable ruleTable = null;
         if (enablePreprocess) {
@@ -60,11 +64,10 @@ public class VisearchChecker {
         MinimalVisSearch subVfs = new MinimalVisSearch(subConfiguration);
         subVfs.init(happenBeforeGraph);
         boolean result = subVfs.checkConsistency();
-        List<SearchState> states = subVfs.getAllSearchState();
-        if (states.size() == 0) {
+        if (subVfs.isExit()) {
             return result;
         }
-
+        List<SearchState> states = subVfs.getAllSearchState();
         MultiThreadSearch multiThreadSearch = new MultiThreadSearch(happenBeforeGraph, configuration, threadNum);
         multiThreadSearch.setRuleTable(ruleTable);
         return multiThreadSearch.startSearch(states);
@@ -100,7 +103,7 @@ public class VisearchChecker {
         }
     }
 
-    public void testDataSet(String filepath, boolean enableMulti, VisibilityType visibilityType) throws Exception {
+    public void testDataSet(String filepath, VisibilityType visibilityType) throws Exception {
         File baseFile = new File(filepath);
         if (baseFile.isFile() || !baseFile.exists()) {
             throw new FileNotFoundException();
@@ -114,7 +117,7 @@ public class VisearchChecker {
             if (i % 1000 == 0) {
                 System.out.println(i);
             }
-            Boolean result = testTrace(file.toString(), enableMulti, visibilityType);
+            Boolean result = testTrace(file.toString(),  visibilityType);
             if (!result) {
                 System.out.println(file.toString() + ":" + result);
             }
@@ -122,11 +125,11 @@ public class VisearchChecker {
         System.out.println("Finishing " + df.format(new Date()));
     }
 
-    public void testDataSet(List<String> dataset, boolean enableMulti, VisibilityType visibilityType) throws Exception {
+    public void testDataSet(List<String> dataset, VisibilityType visibilityType) throws Exception {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         System.out.println("Starting " + df.format(new Date()));
         for (String file : dataset) {
-            Boolean result = testTrace(file, enableMulti, visibilityType);
+            Boolean result = testTrace(file, visibilityType);
             System.out.println(file + ":" + result);
         }
         System.out.println("Finishing " + df.format(new Date()));
@@ -164,7 +167,7 @@ public class VisearchChecker {
         System.out.println("Finishing " + df.format(new Date()));
     }
 
-    public boolean testTrace(String filename, boolean enableMulti, VisibilityType visibilityType) throws Exception {
+    public boolean testTrace(String filename, VisibilityType visibilityType) throws Exception {
         SearchConfiguration configuration = new SearchConfiguration.Builder()
                 .setAdt(adt)
                 .setEnableIncompatibleRelation(false)
@@ -173,13 +176,8 @@ public class VisearchChecker {
                 .setVisibilityType(visibilityType)
                 .setFindAllAbstractExecution(false)
                 .build();
-        Boolean result;
-        if (enableMulti) {
-            result = multiThreadCheck(filename, configuration, false);
-        } else {
-            result = normalCheck(filename, configuration, false);
-        }
-        return result;
+
+        return multiThreadCheck(filename, configuration, false);
     }
 
     public List<String> filter(String filename) throws Exception {
@@ -195,7 +193,7 @@ public class VisearchChecker {
 
     public String measureVisibility(String filename) throws Exception {
         for (int i = 0; i < 6; i++) {
-            boolean result = testTrace(filename, true, VisibilityType.values()[i]);
+            boolean result = testTrace(filename, VisibilityType.values()[i]);
             if (result) {
                 return VisibilityType.values()[i].name();
             }
@@ -243,13 +241,13 @@ public class VisearchChecker {
                 if (res.getBoolean("measure")) {
                     checker.measureDataSet(filepath);
                 } else {
-                    checker.testDataSet(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
+                    checker.testDataSet(filepath, VisibilityType.getVisibility(res.getString("vis")));
                 }
             } else {
                 if (res.getBoolean("measure")) {
                     System.out.println(checker.measureVisibility(filepath));
                 } else {
-                    checker.testTrace(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
+                    checker.testTrace(filepath, VisibilityType.getVisibility(res.getString("vis")));
                 }
             }
             System.out.println(res);

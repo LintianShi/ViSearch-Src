@@ -66,6 +66,7 @@ public class MinimalVisSearch {
 //                        System.out.println(state.toString());
                         results.add(state);
                         if (!configuration.isFindAllAbstractExecution()) {
+                            exit = true;
                             return true;
                         }
                     }
@@ -82,6 +83,7 @@ public class MinimalVisSearch {
             }
         }
 //        System.out.println(stateExplored);
+        exit = true;
         return false;
     }
 
