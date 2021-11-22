@@ -175,9 +175,9 @@ public class VisearchChecker {
                 .build();
         Boolean result;
         if (enableMulti) {
-            result = multiThreadCheck(filename, configuration, true);
+            result = multiThreadCheck(filename, configuration, false);
         } else {
-            result = normalCheck(filename, configuration, true);
+            result = normalCheck(filename, configuration, false);
         }
         return result;
     }
@@ -224,10 +224,10 @@ public class VisearchChecker {
                 .type(String.class)
                 .dest("vis")
                 .setDefault("complete");
-        parser.addArgument("--measure").help(". Enable measure")
+        parser.addArgument("--unset-measure").help(". Enable measure")
                 .dest("measure")
                 .action(storeFalse());
-        parser.addArgument("--dataset").help(". Checking for data set")
+        parser.addArgument("--unset-dataset").help(". Checking for data set")
                 .dest("dataset")
                 .action(storeFalse());
         Namespace res;
@@ -247,7 +247,7 @@ public class VisearchChecker {
                 }
             } else {
                 if (res.getBoolean("measure")) {
-                    checker.measureVisibility(filepath);
+                    System.out.println(checker.measureVisibility(filepath));
                 } else {
                     checker.testTrace(filepath, true, VisibilityType.getVisibility(res.getString("vis")));
                 }

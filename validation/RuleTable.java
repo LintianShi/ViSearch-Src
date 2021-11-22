@@ -16,7 +16,7 @@ public class RuleTable {
     public boolean linearizationFilter(Linearization linearization, HBGNode node) {
         Collection<HBGNode> mustBefore = linRules.get(node);
         for (HBGNode n : mustBefore) {
-            if (linearization.contains(n)) {
+            if (!linearization.contains(n)) {
                 return false;
             }
         }

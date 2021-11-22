@@ -210,8 +210,10 @@ public class RedisRpq extends AbstractDataType {
         } else {
             RpqElement max = data.get(0);
             Integer val = max.getVal();
+            Integer ele = max.getEle();
             //return "rwfzmax:" + Integer.toString(max.getEle()) + ":" + val.stripTrailingZeros().toPlainString();
-            return  val.toString();
+            //return ele.toString() + " " + val.toString();
+            return val.toString();
         }
     }
 
