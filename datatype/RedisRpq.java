@@ -2,6 +2,7 @@ package datatype;
 
 import history.Invocation;
 import traceprocessing.Record;
+import datatype.OperationTypes.OPERATION_TYPE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,14 +16,14 @@ public class RedisRpq extends AbstractDataType {
         return new RedisRpq();
     }
 
-    public String getOperationType(String methodName) {
+    public OPERATION_TYPE getOperationType(String methodName) {
         if (operationTypes == null) {
             operationTypes = new OperationTypes();
-            operationTypes.setOperationType("rem", "UPDATE");
-            operationTypes.setOperationType("add", "UPDATE");
-            operationTypes.setOperationType("incrby", "UPDATE");
-            operationTypes.setOperationType("max", "QUERY");
-            operationTypes.setOperationType("score", "QUERY");
+            operationTypes.setOperationType("rem", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("add", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("incrby", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("max", OPERATION_TYPE.QUERY);
+            operationTypes.setOperationType("score", OPERATION_TYPE.QUERY);
             return operationTypes.getOperationType(methodName);
         } else {
             return operationTypes.getOperationType(methodName);
@@ -30,15 +31,15 @@ public class RedisRpq extends AbstractDataType {
     }
 
     protected boolean isRelated(Invocation src, Invocation dest) {
-        if (src.getOperationType().equals("UPDATE")) {
+        if (src.getOperationType() == OPERATION_TYPE.UPDATE) {
             return false;
-        } else if (src.getOperationType().equals("QUERY")) {
+        } else if (src.getOperationType() == OPERATION_TYPE.QUERY) {
             if (src.getId() == dest.getId()) {
                 return true;
             }
             if (src.getMethodName().equals("score")) {
                 Integer ele = (Integer) src.getArguments().get(0);
-                if (dest.getOperationType().equals("UPDATE") && dest.getArguments().get(0).equals(ele)) {
+                if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                     return true;
                 } else {
                     return false;
@@ -48,7 +49,7 @@ public class RedisRpq extends AbstractDataType {
                     return false;
                 }
                 Integer ele = Integer.parseInt(src.getRetValue().split(" ")[0]);
-                if (dest.getOperationType().equals("UPDATE") && dest.getArguments().get(0).equals(ele)) {
+                if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                     return true;
                 } else {
                     return false;

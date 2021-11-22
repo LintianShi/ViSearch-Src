@@ -4,6 +4,7 @@ import history.HBGNode;
 import history.HappenBeforeGraph;
 import history.Invocation;
 import traceprocessing.Record;
+import datatype.OperationTypes.OPERATION_TYPE;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -61,5 +62,5 @@ public abstract class AbstractDataType {
 
     public abstract AbstractDataType createInstance();
 
-    public abstract String getOperationType(String methodName);
+    public abstract OPERATION_TYPE getOperationType(String methodName);
 }

@@ -5,13 +5,13 @@ import java.util.HashMap;
 public class OperationTypes {
     public enum OPERATION_TYPE {UPDATE, QUERY};
 
-    private HashMap<String, String> operationTypes = new HashMap<>();
+    private HashMap<String, OPERATION_TYPE> operationTypes = new HashMap<>();
 
-    public String getOperationType(String methodName) {
+    public OPERATION_TYPE getOperationType(String methodName) {
         return operationTypes.get(methodName);
     }
 
-    public void setOperationType(String methodName, String operationType) {
+    public void setOperationType(String methodName, OPERATION_TYPE operationType) {
         operationTypes.put(methodName, operationType);
     }
 }

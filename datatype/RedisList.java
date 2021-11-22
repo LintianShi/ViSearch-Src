@@ -2,6 +2,7 @@ package datatype;
 
 import history.Invocation;
 import traceprocessing.Record;
+import datatype.OperationTypes.OPERATION_TYPE;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -92,12 +93,12 @@ public class RedisList extends AbstractDataType {
         return new RedisList();
     }
 
-    public String getOperationType(String methodName) {
+    public OPERATION_TYPE getOperationType(String methodName) {
         if (operationTypes == null) {
             operationTypes = new OperationTypes();
-            operationTypes.setOperationType("insert", "UPDATE");
-            operationTypes.setOperationType("remove", "UPDATE");
-            operationTypes.setOperationType("read", "QUERY");
+            operationTypes.setOperationType("insert", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("remove", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("read", OPERATION_TYPE.QUERY);
             return operationTypes.getOperationType(methodName);
         } else {
             return operationTypes.getOperationType(methodName);

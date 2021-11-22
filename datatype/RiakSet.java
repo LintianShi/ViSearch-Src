@@ -2,19 +2,20 @@ package datatype;
 
 import history.Invocation;
 import traceprocessing.Record;
+import datatype.OperationTypes.OPERATION_TYPE;
 
 import java.util.HashSet;
 
 public class RiakSet extends AbstractDataType {
     private HashSet<Integer> data = new HashSet<>();
 
-    public String getOperationType(String methodName) {
+    public OPERATION_TYPE getOperationType(String methodName) {
         if (operationTypes == null) {
             operationTypes = new OperationTypes();
-            operationTypes.setOperationType("remove", "UPDATE");
-            operationTypes.setOperationType("add", "UPDATE");
-            operationTypes.setOperationType("contains", "QUERY");
-            operationTypes.setOperationType("size", "QUERY");
+            operationTypes.setOperationType("remove", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("add", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("contains", OPERATION_TYPE.QUERY);
+            operationTypes.setOperationType("size", OPERATION_TYPE.QUERY);
             return operationTypes.getOperationType(methodName);
         } else {
             return operationTypes.getOperationType(methodName);
@@ -30,14 +31,14 @@ public class RiakSet extends AbstractDataType {
     }
 
     protected boolean isRelated(Invocation src, Invocation dest) {
-        if (src.getOperationType().equals("UPDATE")) {
+        if (src.getOperationType() == OPERATION_TYPE.UPDATE) {
             return false;
-        } else if (src.getOperationType().equals("QUERY")) {
+        } else if (src.getOperationType() == OPERATION_TYPE.QUERY) {
             if (src.getId() == dest.getId()) {
                 return true;
             }
             Integer ele = (Integer) src.getArguments().get(0);
-            if (dest.getOperationType().equals("UPDATE") && dest.getArguments().get(0).equals(ele)) {
+            if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                 return true;
             } else {
                 return false;

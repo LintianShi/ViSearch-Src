@@ -3,6 +3,7 @@ package validation;
 import datatype.AbstractDataType;
 import history.*;
 import arbitration.*;
+import datatype.OperationTypes.OPERATION_TYPE;
 
 import java.util.*;
 
@@ -12,13 +13,13 @@ public class Validation {
         LinVisibility visibility = searchState.getVisibility();
         try {
             HBGNode lastNode = lin.getLast();
-            if (lastNode.getInvocation().getOperationType().equals("UPDATE")) {
+            if (lastNode.getInvocation().getOperationType() == OPERATION_TYPE.UPDATE) {
                 return true;
-            } else if (lastNode.getInvocation().getOperationType().equals("QUERY")) {
+            } else if (lastNode.getInvocation().getOperationType() == OPERATION_TYPE.QUERY) {
                 Set<HBGNode> vis = visibility.getNodeVisibility(lastNode);
                 for (int i = 0; i < lin.size() - 1; i++) {
                     HBGNode node = lin.get(i);
-                    if (node.getInvocation().getOperationType().equals("UPDATE") && vis.contains(node)) {
+                    if (node.getInvocation().getOperationType() == OPERATION_TYPE.UPDATE && vis.contains(node)) {
                         adt.invoke(node.getInvocation());
                     }
                 }

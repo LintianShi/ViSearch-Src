@@ -1,5 +1,7 @@
 package history;
 
+import datatype.OperationTypes.OPERATION_TYPE;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -23,7 +25,7 @@ public class Invocation implements Serializable {
     @JSONField(serialize=false)
     private transient Pair<Integer, Integer> pairID;
     @JSONField(serialize=false)
-    private transient String operationType = "UPDATE";
+    private transient OPERATION_TYPE operationType = OPERATION_TYPE.UPDATE;
 
     public Invocation() {
         ;
@@ -81,11 +83,11 @@ public class Invocation implements Serializable {
         this.pairID = pairID;
     }
 
-    public String getOperationType() {
+    public OPERATION_TYPE getOperationType() {
         return operationType;
     }
 
-    public void setOperationType(String operationType) {
+    public void setOperationType(OPERATION_TYPE operationType) {
         this.operationType = operationType;
     }
 

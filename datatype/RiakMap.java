@@ -2,19 +2,20 @@ package datatype;
 
 import history.Invocation;
 import traceprocessing.Record;
+import datatype.OperationTypes.OPERATION_TYPE;
 
 import java.util.*;
 
 public class RiakMap extends AbstractDataType {
     private HashMap<Integer, Integer> data = new HashMap<>();
 
-    public String getOperationType(String methodName) {
+    public OPERATION_TYPE getOperationType(String methodName) {
         if (operationTypes == null) {
             operationTypes = new OperationTypes();
-            operationTypes.setOperationType("put", "UPDATE");
-            operationTypes.setOperationType("get", "QUERY");
-            operationTypes.setOperationType("containsValue", "QUERY");
-            operationTypes.setOperationType("size", "QUERY");
+            operationTypes.setOperationType("put", OPERATION_TYPE.UPDATE);
+            operationTypes.setOperationType("get", OPERATION_TYPE.QUERY);
+            operationTypes.setOperationType("containsValue", OPERATION_TYPE.QUERY);
+            operationTypes.setOperationType("size", OPERATION_TYPE.QUERY);
             return operationTypes.getOperationType(methodName);
         } else {
             return operationTypes.getOperationType(methodName);
@@ -75,9 +76,9 @@ public class RiakMap extends AbstractDataType {
     }
 
     protected boolean isRelated(Invocation src, Invocation dest) {
-        if (src.getOperationType().equals("UPDATE")) {
+        if (src.getOperationType() == OPERATION_TYPE.UPDATE) {
             return false;
-        } else if (src.getOperationType().equals("QUERY")) {
+        } else if (src.getOperationType() == OPERATION_TYPE.QUERY) {
             if (src.getMethodName().equals("get")) {
                 if (src.getId() == dest.getId()) {
                     return true;
@@ -90,7 +91,7 @@ public class RiakMap extends AbstractDataType {
                 }
             } else if (src.getMethodName().equals("containsValue")) {
                 Integer value = (Integer) src.getArguments().get(0);
-                if (dest.getOperationType().equals("UPDATE") && dest.getArguments().get(1).equals(value)) {
+                if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(1).equals(value)) {
                     return true;
                 } else {
                     return false;
