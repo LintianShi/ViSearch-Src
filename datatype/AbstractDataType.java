@@ -13,13 +13,7 @@ import java.util.List;
 public abstract class AbstractDataType {
     protected OperationTypes operationTypes = null;
 
-    public final String invoke(Invocation invocation) throws Exception {
-        String methodName = invocation.getMethodName();
-        Class clazz = this.getClass();
-        Method method = clazz.getDeclaredMethod(methodName, Invocation.class);
-        method.setAccessible(true);
-        return (String)method.invoke(this, invocation);
-    }
+    public abstract String excute(Invocation invocation) throws Exception;
 
     public List<List<HBGNode>> getRelatedOperations(HBGNode node, HappenBeforeGraph happenBeforeGraph) {
         List<List<HBGNode>> lists = new ArrayList<>();
@@ -43,7 +37,7 @@ public abstract class AbstractDataType {
     }
 
     public boolean isReadCluster(Invocation invocation) {
-        if (invocation.getOperationType().equals("QUERY")) {
+        if (invocation.getOperationType() == OPERATION_TYPE.QUERY) {
             return true;
         } else {
             return false;

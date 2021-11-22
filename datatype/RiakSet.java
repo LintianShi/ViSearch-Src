@@ -9,6 +9,22 @@ import java.util.HashSet;
 public class RiakSet extends AbstractDataType {
     private HashSet<Integer> data = new HashSet<>();
 
+    @Override
+    public String excute(Invocation invocation) throws Exception {
+        String methodName = invocation.getMethodName();
+        if (methodName.equals("add")) {
+            return add(invocation);
+        } else if (methodName.equals("remove")) {
+            return remove(invocation);
+        } else if (methodName.equals("contains")) {
+            return contains(invocation);
+        } else if (methodName.equals("size")) {
+            return size(invocation);
+        } else {
+            throw new Exception("Wrong operation: " + methodName);
+        }
+    }
+
     public OPERATION_TYPE getOperationType(String methodName) {
         if (operationTypes == null) {
             operationTypes = new OperationTypes();

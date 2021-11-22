@@ -9,6 +9,22 @@ import java.util.*;
 public class RiakMap extends AbstractDataType {
     private HashMap<Integer, Integer> data = new HashMap<>();
 
+    @Override
+    public String excute(Invocation invocation) throws Exception {
+        String methodName = invocation.getMethodName();
+        if (methodName.equals("put")) {
+            return put(invocation);
+        } else if (methodName.equals("get")) {
+            return get(invocation);
+        } else if (methodName.equals("containsValue")) {
+            return containsValue(invocation);
+        } else if (methodName.equals("size")) {
+            return size(invocation);
+        } else {
+            throw new Exception("Wrong operation: " + methodName);
+        }
+    }
+
     public OPERATION_TYPE getOperationType(String methodName) {
         if (operationTypes == null) {
             operationTypes = new OperationTypes();

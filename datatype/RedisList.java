@@ -10,6 +10,20 @@ import java.util.List;
 public class RedisList extends AbstractDataType {
     private List<ListElement> data = new LinkedList<>();
 
+    @Override
+    public String excute(Invocation invocation) throws Exception {
+        String methodName = invocation.getMethodName();
+        if (methodName.equals("insert")) {
+            return insert(invocation);
+        } else if (methodName.equals("remove")) {
+            return read(invocation);
+        } else if (methodName.equals("read")) {
+            return read(invocation);
+        } else {
+            throw new Exception("Wrong operation: " + methodName);
+        }
+    }
+
     private String insert(Invocation invocation) {
         String prevId = (String) invocation.getArguments().get(0);
         String newId = (String) invocation.getArguments().get(1);

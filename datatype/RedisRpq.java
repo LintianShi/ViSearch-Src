@@ -12,6 +12,24 @@ public class RedisRpq extends AbstractDataType {
     private ArrayList<RpqElement> data = new ArrayList<>();
     private HashMap<Integer, RpqElement> map = new HashMap<>();
 
+    @Override
+    public String excute(Invocation invocation) throws Exception {
+        String methodName = invocation.getMethodName();
+        if (methodName.equals("add")) {
+            return add(invocation);
+        } else if (methodName.equals("rem")) {
+            return rem(invocation);
+        } else if (methodName.equals("incrby")) {
+            return incrby(invocation);
+        } else if (methodName.equals("score")) {
+            return score(invocation);
+        } else if (methodName.equals("max")) {
+            return max(invocation);
+        } else {
+            throw new Exception("Wrong operation: " + methodName);
+        }
+    }
+
     public AbstractDataType createInstance() {
         return new RedisRpq();
     }

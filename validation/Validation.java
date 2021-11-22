@@ -20,10 +20,10 @@ public class Validation {
                 for (int i = 0; i < lin.size() - 1; i++) {
                     HBGNode node = lin.get(i);
                     if (node.getInvocation().getOperationType() == OPERATION_TYPE.UPDATE && vis.contains(node)) {
-                        adt.invoke(node.getInvocation());
+                        adt.excute(node.getInvocation());
                     }
                 }
-                String ret = adt.invoke(lastNode.getInvocation());
+                String ret = adt.excute(lastNode.getInvocation());
                 adt.reset();
                 if (lastNode.getInvocation().getRetValue().equals(ret)) {
                     return true;

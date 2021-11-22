@@ -1,5 +1,6 @@
 package arbitration;
 
+import datatype.OperationTypes;
 import history.HBGNode;
 import history.HappenBeforeGraph;
 import validation.RuleTable;
@@ -61,7 +62,7 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
     public int getQueryOperationSize() {
         int sz = 0;
         for (HBGNode node : lin) {
-            if (node.getInvocation().getOperationType().equals("QUERY")) {
+            if (node.getInvocation().getOperationType() == OperationTypes.OPERATION_TYPE.QUERY) {
                 sz++;
             }
         }
@@ -73,7 +74,7 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
     }
 
     public Linearization prefix(int index) {
-        if (index < 0 && index >= lin.size()) {
+        if (index < 0 || index >= lin.size()) {
             return null;
         } else {
             Linearization sub = new Linearization();
