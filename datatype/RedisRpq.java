@@ -132,7 +132,7 @@ public class RedisRpq extends AbstractDataType {
         RpqElement temp = data.get(j);
         while (j > 0)
         {
-            if (data.get(i).getVal().doubleValue() >= temp.getVal().doubleValue())
+            if (data.get(i).compare(temp) >= 0)
                 break;
             else
                 {
@@ -157,12 +157,11 @@ public class RedisRpq extends AbstractDataType {
         }
         while (j <= tail)
         {
-            if (j < tail && data.get(j).getVal().doubleValue() <= data.get(j + 1).getVal().doubleValue())
+            if (j < tail && data.get(j).compare(data.get(j + 1)) < 0)
                 j++;
-            if (temp.getVal().doubleValue() >= data.get(j).getVal().doubleValue())
+            if (temp.compare(data.get(j)) >= 0)
                 break;
-        else
-            {
+            else {
                 data.set(i, data.get(j));
                 data.get(i).setIndex(i);
                 i = j;
@@ -326,6 +325,16 @@ class RpqElement {
 
     public void inc(Integer i) {
         val = val + i;
+    }
+
+    public int compare(RpqElement element) {
+        if (this.val < element.val) {
+            return -1;
+        } else if (this.val > element.val) {
+            return 1;
+        } else {
+            return this.ele - element.ele;
+        }
     }
 
     @Override

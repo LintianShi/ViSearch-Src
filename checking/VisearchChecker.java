@@ -65,6 +65,7 @@ public class VisearchChecker {
         subVfs.init(happenBeforeGraph);
         boolean result = subVfs.checkConsistency();
         if (subVfs.isExit()) {
+            System.out.println("exit");
             return result;
         }
         List<SearchState> states = subVfs.getAllSearchState();

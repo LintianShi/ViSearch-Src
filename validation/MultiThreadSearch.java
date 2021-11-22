@@ -25,7 +25,7 @@ public class MultiThreadSearch {
 
     public boolean startSearch(List<SearchState> startStates) {
         int stateNum = startStates.size();
-        System.out.println(stateNum);
+//        System.out.println(stateNum);
         SearchLock searchLock = new SearchLock(searchThreadNum);
         for (int i = 0; i < searchThreadNum; i++) {
             List<SearchState> initStates = new LinkedList<>();
@@ -54,7 +54,7 @@ public class MultiThreadSearch {
 
     public static void main(String[] args) throws Exception {
         VisearchChecker checker = new VisearchChecker("rpq", 4);
-        System.out.println(checker.measureVisibility("D:\\rpq_rwf\\result\\rwf_rpq_default_1636020453043638239.trc"));
+        System.out.println(checker.measureVisibility("D:\\rpq_rwf\\result\\rwf_rpq_default_1635957471065653770.trc"));
     }
 }
 

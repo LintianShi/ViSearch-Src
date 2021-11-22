@@ -55,7 +55,6 @@ public class MinimalVisSearch {
         AbstractDataType adt = new DataTypeFactory().getDataType(configuration.getAdt());
         while (!stateQueue.isEmpty() && !exit
                 && (configuration.getQueueLimit() == -1 || stateQueue.size() < configuration.getQueueLimit())) {
-
             SearchState state = stateQueue.poll();
             List<HBGNode> subset = null;
             while ((subset = state.nextVisibility()) != null && !exit) {
@@ -83,7 +82,6 @@ public class MinimalVisSearch {
             }
         }
 //        System.out.println(stateExplored);
-        exit = true;
         return false;
     }
 
