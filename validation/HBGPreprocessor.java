@@ -1,26 +1,27 @@
 package validation;
 
-import arbitration.VisibilityType;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import history.VisibilityType;
+import com.google.common.collect.HashMultimap;
 import datatype.AbstractDataType;
 import datatype.DataTypeFactory;
 import history.HBGNode;
 import history.HappenBeforeGraph;
+import rule.RuleTable;
 import traceprocessing.MyRawTraceProcessor;
-import util.Pair;
-import util.PairOfPair;
+import util.IntPair;
+import util.NodePair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 
 public class HBGPreprocessor {
-    private List<Pair> extractCommonHBRelation(List<List<Pair>> hbs) {
-        List<Pair> results = new ArrayList<>();
-        HashMap<Pair, Integer> map = new HashMap<>();
-        for (List<Pair> list : hbs) {
-            for (Pair hb : list) {
+    private List<NodePair> extractCommonHBRelation(List<Set<NodePair>> hbs) {
+        List<NodePair> results = new ArrayList<>();
+        HashMap<NodePair, Integer> map = new HashMap<>();
+        for (Set<NodePair> list : hbs) {
+            for (NodePair hb : list) {
                 if (!map.containsKey(hb)) {
                     map.put(hb, 1);
                 } else {
@@ -31,7 +32,7 @@ public class HBGPreprocessor {
             }
         }
 
-        for (Pair hb : map.keySet()) {
+        for (NodePair hb : map.keySet()) {
             if (map.get(hb) == hbs.size()) {
                 results.add(hb);
             }
@@ -39,50 +40,77 @@ public class HBGPreprocessor {
         return results;
     }
 
-//    private List<PairOfPair> removeCommonRelations(List<PairOfPair> incompatibleRelations, List<Pair> commonRelations) {
-//        List<PairOfPair> cleanIncompatibleRelations = new ArrayList<>();
-//        for (PairOfPair pairOfPair : incompatibleRelations) {
-//            boolean flag = true;
-//            for (Pair common : commonRelations) {
-//                Pair reversePair = common.getReversal();
-//                if (pairOfPair.getLeft().equals(reversePair) || pairOfPair.getRight().equals(reversePair)) {
-//                    flag = false;
-//                    break;
-//                }
-//            }
-//            if (flag) {
-//                cleanIncompatibleRelations.add(pairOfPair);
-//            }
-//        }
-//        return cleanIncompatibleRelations;
-//        return incompatibleRelations;
-//    }
+    private void extractLinRules(List<SearchState> states, HashMultimap<HBGNode, HBGNode> linRules) {
+        List<Set<NodePair>> hbs = new ArrayList<>();
+        for (SearchState state : states) {
+            hbs.add(state.extractHBRelation());
+        }
+        List<NodePair> commonHBs = extractCommonHBRelation(hbs);
+        for (NodePair pair : commonHBs) {
+            System.out.printf("Lin: %s -> %s\n", pair.left.toString(), pair.right);
+            linRules.put(pair.right, pair.left);
+        }
+    }
 
-//    private List<PairOfPair> extractCooccurrenceHBRelation(List<List<Pair>> hbs) {
-//        HashMap<PairOfPair, Integer> map = new HashMap<>();
-//        for (List<Pair> list : hbs) {
-//            for (int i = 0; i < list.size(); i++) {
-//                for (int j = i + 1; j < list.size(); j++) {
-//                    PairOfPair pairOfPair = new PairOfPair(list.get(i), list.get(j));
-//                    if (!map.containsKey(pairOfPair)) {
-//                        map.put(pairOfPair, 1);
-//                    } else {
-//                        int count = map.get(pairOfPair);
-//                        map.put(pairOfPair, count + 1);
-//                    }
-//                }
-//            }
-//        }
-//
-//        List<PairOfPair> cooccurrencePairs = new ArrayList<>();
-//        for (PairOfPair pairOfPair : map.keySet()) {
-//            if (map.get(pairOfPair) + map.getOrDefault(pairOfPair.getNegative(), 0) == hbs.size()) {
-//                cooccurrencePairs.add(pairOfPair);
-//            }
-//        }
-//
-//        return cooccurrencePairs;
-//    }
+    private void addVisRule(NodePair vis, Set<NodePair> hbs, HashMultimap<NodePair, NodePair> visRules, HashSet<NodePair> set) {
+        if (!visRules.containsKey(vis)) {
+            visRules.putAll(vis, hbs);
+        } else {
+            List<NodePair> removeHb = new ArrayList<>();
+            for (NodePair hb : visRules.get(vis)) {
+                if (!hbs.contains(hb)) {
+                    removeHb.add(hb);
+                }
+            }
+            for (NodePair r : removeHb) {
+                visRules.remove(vis, r);
+            }
+        }
+    }
+
+    private HashMultimap<NodePair, NodePair> checkVisRules(HBGNode visNode, HashMultimap<NodePair, NodePair> visRules, List<SearchState> states) {
+        if (visRules.isEmpty()) {
+            return visRules;
+        }
+        for (SearchState state : states) {
+            Set<NodePair> hbs = state.extractHBRelation();
+            Set<NodePair> vis = state.extractVisRelation(visNode);
+            List<NodePair> removeKeys = new LinkedList<>();
+            for (NodePair key : visRules.keySet()) {
+                if (!vis.contains(key)) {
+                    Set<NodePair> values = visRules.get(key);
+                    boolean flag = false;
+                    for (NodePair value : values) {
+                        if (!hbs.contains(value)) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        continue;
+                    }
+                    removeKeys.add(key);
+                }
+            }
+            for (NodePair key : removeKeys) {
+                visRules.removeAll(key);
+            }
+        }
+        return visRules;
+    }
+
+    private HashMultimap<NodePair, NodePair> extractVisRules(HBGNode visNode, List<SearchState> states) {
+        HashSet<NodePair> set = new HashSet<>();
+        HashMultimap<NodePair, NodePair> visRules = HashMultimap.create();
+        for (SearchState state : states) {
+            Set<NodePair> hbs = state.extractHBRelation();
+            Set<NodePair> vis = state.extractVisRelation(visNode);
+            for (NodePair v : vis) {
+                addVisRule(v, hbs, visRules, set);
+            }
+        }
+        return checkVisRules(visNode, visRules, states);
+    }
 
 
     public RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, String dataType) {
@@ -95,16 +123,16 @@ public class HBGPreprocessor {
 //                System.out.println(relatedNodes.toString());
 
                 HappenBeforeGraph subHBGraph = new HappenBeforeGraph(relatedNodes);
+                if (subHBGraph.size() <= 1) {
+                    continue;
+                }
 //                System.out.println("Sub graph size: " + subHBGraph.size());
-//                if (subHBGraph.size() > 5) {
-//                    continue;
-//                }
 
                 SearchConfiguration configuration = new SearchConfiguration.Builder()
                                                             .setAdt(dataType)
                                                             .setFindAllAbstractExecution(true)
                                                             .setEnablePrickOperation(false)
-                                                            .setVisibilityType(VisibilityType.BASIC)
+                                                            .setVisibilityType(VisibilityType.MONOTONIC)
                                                             .setEnableOutputSchedule(false)
                                                             .setEnableIncompatibleRelation(false)
                                                             .build();
@@ -115,40 +143,37 @@ public class HBGPreprocessor {
 //                    System.out.println("no abstract execution");
 //                    continue;
 //                }
+//                System.out.println("Abstract execution number: " + subSearch.getResults().size());
 
-                List<List<Pair>> hbs = new ArrayList<>();
-                for (SearchState state : subSearch.getResults()) {
-                    hbs.add(state.extractHBRelation());
+                extractLinRules(subSearch.getResults(), linRules);
+                HashMultimap<NodePair, NodePair> visRules = extractVisRules(node, subSearch.getResults());
+                if (!visRules.isEmpty()) {
+                    for (List<HBGNode> list : relatedNodes) {
+                        System.out.println(list);
+                    }
+//                    System.out.println(subSearch.getResults().toString());
+                    System.out.println("Vis:");
+                    for (NodePair pair : visRules.keySet()) {
+                        System.out.println(pair.toString() + "=" + visRules.get(pair).toString());
+                    }
+                    System.out.println("%-");
                 }
 
-                List<Pair> commonHBs = extractCommonHBRelation(hbs);
-                for (Pair pair : commonHBs) {
-//                    System.out.printf("%s -> %s\n", happenBeforeGraph.get(pair.left).toString(), happenBeforeGraph.get(pair.right).toString());
-                    linRules.put(happenBeforeGraph.get(pair.right), happenBeforeGraph.get(pair.left));
-                }
-
-//                addHBRelations(happenBeforeGraph, commonHBs);
-//
-//                List<PairOfPair> subCoccurrenceRelations = removeCommonRelations(extractCooccurrenceHBRelation(hbs), commonHBs);
-//                System.out.printf("Common: %d, Co-occurrence: %d\n", commonHBs.size(), subCoccurrenceRelations.size());
-//                for (PairOfPair pairOfPair : subCoccurrenceRelations) {
-//                    System.out.printf("<%s -> %s> --- <%s ->%s>\n", happenBeforeGraph.get(pairOfPair.getLeft().getLeft()).toString(), happenBeforeGraph.get(pairOfPair.getLeft().getRight()).toString(), happenBeforeGraph.get(pairOfPair.getRight().getLeft()).toString(), happenBeforeGraph.get(pairOfPair.getRight().getRight()).toString());
-//                }
-//               coccurrenceRelations.addAll(subCoccurrenceRelations);
-//
-//                System.out.println("Common relation size: " + commonHBs.size());
-//                System.out.println("Co-occurrence relation size: " + subCoccurrenceRelations.size());
             }
         }
-
-//        Multimap<ImmutablePair<Integer, Integer>, ImmutablePair<Integer, Integer>> ruleTable = generateRuleTable(incompatibleRelations);
         RuleTable ruleTable = new RuleTable(linRules);
         return ruleTable;
     }
 
     public static void main(String args[]) throws Exception {
-        File baseFile = new File("D:\\rpq_rwf\\result");
-        AbstractDataType adt = new DataTypeFactory().getDataType("rpq");
+//        Multimap<Integer, Integer> map = HashMultimap.create();
+//        map.put(1, 1);
+//        map.put(1, 2);
+//        map.remove(1, 2);
+//        map.remove(1, 1);
+//        System.out.println(map.toString());
+        File baseFile = new File("D:\\set311_with_size\\result");
+        String dataType = "set";
         if (baseFile.isFile() || !baseFile.exists()) {
             throw new FileNotFoundException();
         }
@@ -159,10 +184,11 @@ public class HBGPreprocessor {
             if (i == 1000) {
                 return;
             }
-//            System.out.println(file.toString());
+
+            System.out.println(file.toString());
             MyRawTraceProcessor rp = new MyRawTraceProcessor();
-            HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), adt).generateHappenBeforeGraph();
-            new HBGPreprocessor().preprocess(happenBeforeGraph, "rpq");
+            HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), new DataTypeFactory().getDataType(dataType)).generateHappenBeforeGraph();
+            new HBGPreprocessor().preprocess(happenBeforeGraph, dataType);
         }
     }
 }

@@ -2,6 +2,7 @@ package validation;
 
 import checking.VisearchChecker;
 import history.HappenBeforeGraph;
+import rule.RuleTable;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -54,7 +55,7 @@ public class MultiThreadSearch {
 
     public static void main(String[] args) throws Exception {
         VisearchChecker checker = new VisearchChecker("rpq", 4);
-        System.out.println(checker.measureVisibility("D:\\rpq_rwf\\result\\rwf_rpq_default_1635957471065653770.trc"));
+        System.out.println(checker.measureVisibility("D:\\rpq_rwf\\result\\rwf_rpq_default_1634988338134.trc"));
     }
 }
 

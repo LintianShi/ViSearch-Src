@@ -1,9 +1,7 @@
-package arbitration;
+package history;
 
 import datatype.OperationTypes;
-import history.HBGNode;
-import history.HappenBeforeGraph;
-import validation.RuleTable;
+import rule.RuleTable;
 
 import java.io.Serializable;
 import java.util.*;
@@ -15,8 +13,6 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
     public Linearization() {
         ;
     }
-
-
 
     public void add(HBGNode node) {
         lin.add(node);
@@ -41,6 +37,10 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
             }
         }
         return false;
+    }
+
+    public int indexOf(HBGNode node) {
+        return lin.indexOf(node);
     }
 
     public void addFront(List<HBGNode> nodes) {

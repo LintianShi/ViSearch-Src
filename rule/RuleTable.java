@@ -1,6 +1,6 @@
-package validation;
+package rule;
 
-import arbitration.Linearization;
+import history.Linearization;
 import com.google.common.collect.HashMultimap;
 import history.HBGNode;
 
@@ -8,6 +8,7 @@ import java.util.Collection;
 
 public class RuleTable {
     private HashMultimap<HBGNode, HBGNode> linRules;
+    private HashMultimap<HBGNode, HBGNode> visRules;
 
     public RuleTable(HashMultimap<HBGNode, HBGNode> rules) {
         this.linRules = rules;

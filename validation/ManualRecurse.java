@@ -2,7 +2,6 @@ package validation;
 
 import history.HBGNode;
 import history.Invocation;
-import arbitration.VisibilityType;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package arbitration;
+package history;
 
 public enum VisibilityType {
     COMPLETE, CAUSAL, PEER, MONOTONIC, BASIC, WEAK;

@@ -1,8 +1,9 @@
 package checking;
 
-import arbitration.VisibilityType;
+import history.VisibilityType;
 import datatype.DataTypeFactory;
 import history.HappenBeforeGraph;
+import rule.RuleTable;
 import traceprocessing.MyRawTraceProcessor;
 import validation.*;
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -65,7 +66,6 @@ public class VisearchChecker {
         subVfs.init(happenBeforeGraph);
         boolean result = subVfs.checkConsistency();
         if (subVfs.isExit()) {
-            System.out.println("exit");
             return result;
         }
         List<SearchState> states = subVfs.getAllSearchState();

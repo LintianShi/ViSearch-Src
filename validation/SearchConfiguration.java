@@ -1,7 +1,6 @@
 package validation;
 
-import arbitration.VisibilityType;
-import datatype.AbstractDataType;
+import history.VisibilityType;
 
 public class SearchConfiguration implements Cloneable {
     private int searchMode = 0; // 0: dfs, 1: bfs, 2: h*

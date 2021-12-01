@@ -75,6 +75,12 @@ public class HBGNode implements Serializable {
     }
 
     public boolean equals(Object node) {
+        if (node == null) {
+            return false;
+        }
+        if (this == node) {
+            return true;
+        }
         return this.hashCode() == node.hashCode();
     }
 }

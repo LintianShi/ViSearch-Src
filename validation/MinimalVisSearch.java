@@ -2,11 +2,14 @@ package validation;
 
 import datatype.AbstractDataType;
 import datatype.DataTypeFactory;
+import datatype.OperationTypes;
 import history.HBGNode;
 import history.HappenBeforeGraph;
+import history.LinVisibility;
+import history.Linearization;
+import rule.RuleTable;
 
 import java.util.*;
-import java.util.concurrent.LinkedBlockingDeque;
 
 public class MinimalVisSearch {
     private SearchStatePriorityQueue stateQueue;
@@ -63,7 +66,8 @@ public class MinimalVisSearch {
                     if (state.isComplete()) {
 //                        System.out.println(stateExplored);
 //                        System.out.println(state.toString());
-                        results.add(state);
+                        results.add((SearchState) state.clone());
+//                        results.add(state);
                         if (!configuration.isFindAllAbstractExecution()) {
                             exit = true;
                             return true;
@@ -94,7 +98,7 @@ public class MinimalVisSearch {
     }
 
     private boolean executeCheck(AbstractDataType adt, SearchState searchState) {
-        boolean excuteResult = Validation.crdtExecute(adt, searchState);
+        boolean excuteResult = crdtExecute(adt, searchState);
         if (configuration.isEnableOutputSchedule()) {
             HBGNode lastOperation = searchState.getLinearization().getLast();
             if (searchState.getLinearization().size() % 10 == 0) {
@@ -102,6 +106,35 @@ public class MinimalVisSearch {
             }
         }
         return excuteResult;
+    }
+
+    private boolean crdtExecute(AbstractDataType adt, SearchState searchState) {
+        Linearization lin = searchState.getLinearization();
+        LinVisibility visibility = searchState.getVisibility();
+        try {
+            HBGNode lastNode = lin.getLast();
+            if (lastNode.getInvocation().getOperationType() == OperationTypes.OPERATION_TYPE.UPDATE) {
+                return true;
+            } else if (lastNode.getInvocation().getOperationType() == OperationTypes.OPERATION_TYPE.QUERY) {
+                Set<HBGNode> vis = visibility.getNodeVisibility(lastNode);
+                for (int i = 0; i < lin.size() - 1; i++) {
+                    HBGNode node = lin.get(i);
+                    if (node.getInvocation().getOperationType() == OperationTypes.OPERATION_TYPE.UPDATE && vis.contains(node)) {
+                        adt.excute(node.getInvocation());
+                    }
+                }
+                String ret = adt.excute(lastNode.getInvocation());
+                adt.reset();
+                if (lastNode.getInvocation().getRetValue().equals(ret)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void handlePrickOperation(SearchState state) {

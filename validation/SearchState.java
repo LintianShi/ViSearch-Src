@@ -1,11 +1,14 @@
 package validation;
 
-import arbitration.VisibilityType;
+import datatype.OperationTypes;
+import history.VisibilityType;
 import history.HBGNode;
 import history.HappenBeforeGraph;
-import arbitration.Linearization;
-import arbitration.LinVisibility;
-import util.Pair;
+import history.Linearization;
+import history.LinVisibility;
+import rule.RuleTable;
+import util.IntPair;
+import util.NodePair;
 
 import java.io.Serializable;
 import java.util.*;
@@ -152,17 +155,52 @@ public class SearchState implements Serializable, Comparable<SearchState> {
         return visibility;
     }
 
-    public List<Pair> extractHBRelation() {
-        List<Pair> hbs = new ArrayList<>();
+    public Set<NodePair> extractHBRelation() {
+        Set<NodePair> hbs = new HashSet<>();
         for (int i = 1; i < linearization.size(); i++) {
             for (int j = 0; j < i; j++) {
                 if (linearization.get(j).getThreadId() != linearization.get(i).getThreadId()) {
-                    hbs.add(new Pair(linearization.get(j).getId(), linearization.get(i).getId()));
+                    hbs.add(new NodePair(linearization.get(j), linearization.get(i)));
                 }
             }
         }
         return hbs;
     }
+
+    public Set<NodePair> extractVisRelation(HBGNode visNode) {
+        Set<NodePair> vis = new HashSet<>();
+        for (HBGNode node : linearization) {
+            if (node.equals(visNode)) {
+                Set<HBGNode> visSet = visibility.getNodeVisibility(node);
+                for (int i = 0; i < linearization.indexOf(node); i++) {
+                    HBGNode prevNode = linearization.get(i);
+                    if (!visSet.contains(prevNode)) {
+                        vis.add(new NodePair(node, prevNode));
+                    } else if (prevNode.getThreadId() != node.getThreadId()) {
+                        vis.add(new NodePair(prevNode, node));
+                    }
+                }
+                break;
+            }
+        }
+        return vis;
+    }
+
+//    public Set<NodePair> extractNotVisRelation() {
+//        Set<NodePair> unvis = new HashSet<>();
+//        for (HBGNode node : linearization) {
+//            if (node.getInvocation().getOperationType() == OperationTypes.OPERATION_TYPE.QUERY) {
+//                for (int i = 0; i < linearization.indexOf(node); i++) {
+//                    HBGNode prevNode = linearization.get(i);
+//                    if (!visibility.getNodeVisibility(node).contains(prevNode)) {
+//                        unvis.add(new NodePair(node, prevNode));
+//                    }
+//                }
+//                break;
+//            }
+//        }
+//        return unvis;
+//    }
 
     public int compareTo(SearchState o) {
         if (linearization.size() > o.linearization.size()) {
@@ -186,4 +224,8 @@ public class SearchState implements Serializable, Comparable<SearchState> {
         return linearization.toString() + " | " + visibility.toString();
     }
 
+    @Override
+    public Object clone() {
+        return new SearchState((Linearization) linearization.clone(), (LinVisibility) visibility.clone());
+    }
 }
