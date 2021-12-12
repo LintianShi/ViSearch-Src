@@ -47,9 +47,10 @@ public class HBGPreprocessor {
         }
         List<NodePair> commonHBs = extractCommonHBRelation(hbs);
         for (NodePair pair : commonHBs) {
-            System.out.printf("Lin: %s -> %s\n", pair.left.toString(), pair.right);
+//            System.out.printf("Lin: %s -> %s\n", pair.left.toString(), pair.right);
             linRules.put(pair.right, pair.left);
         }
+//        System.out.println();
     }
 
     private void addVisRule(NodePair vis, Set<NodePair> hbs, HashMultimap<NodePair, NodePair> visRules, HashSet<NodePair> set) {
@@ -71,6 +72,11 @@ public class HBGPreprocessor {
     private HashMultimap<NodePair, NodePair> checkVisRules(HBGNode visNode, HashMultimap<NodePair, NodePair> visRules, List<SearchState> states) {
         if (visRules.isEmpty()) {
             return visRules;
+        }
+        for (NodePair key : visRules.keySet()) {
+            for (NodePair value : visRules.get(key)) {
+                
+            }
         }
         for (SearchState state : states) {
             Set<NodePair> hbs = state.extractHBRelation();
@@ -96,6 +102,7 @@ public class HBGPreprocessor {
                 visRules.removeAll(key);
             }
         }
+
         return visRules;
     }
 
@@ -113,7 +120,7 @@ public class HBGPreprocessor {
     }
 
 
-    public RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, String dataType) {
+    public RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, String dataType, VisibilityType visibilityType) {
         AbstractDataType adt = new DataTypeFactory().getDataType(dataType);
         HashMultimap<HBGNode, HBGNode> linRules = HashMultimap.create();
         for (HBGNode node : happenBeforeGraph) {
@@ -126,38 +133,30 @@ public class HBGPreprocessor {
                 if (subHBGraph.size() <= 1) {
                     continue;
                 }
-//                System.out.println("Sub graph size: " + subHBGraph.size());
 
                 SearchConfiguration configuration = new SearchConfiguration.Builder()
                                                             .setAdt(dataType)
                                                             .setFindAllAbstractExecution(true)
                                                             .setEnablePrickOperation(false)
-                                                            .setVisibilityType(VisibilityType.MONOTONIC)
+                                                            .setVisibilityType(visibilityType)
                                                             .setEnableOutputSchedule(false)
                                                             .setEnableIncompatibleRelation(false)
                                                             .build();
                 MinimalVisSearch subSearch = new MinimalVisSearch(configuration);
                 subSearch.init(subHBGraph);
                 subSearch.checkConsistency();
-//                if (subSearch.getResults().size() == 0) {
-//                    System.out.println("no abstract execution");
-//                    continue;
-//                }
-//                System.out.println("Abstract execution number: " + subSearch.getResults().size());
-
                 extractLinRules(subSearch.getResults(), linRules);
-                HashMultimap<NodePair, NodePair> visRules = extractVisRules(node, subSearch.getResults());
-                if (!visRules.isEmpty()) {
-                    for (List<HBGNode> list : relatedNodes) {
-                        System.out.println(list);
-                    }
-//                    System.out.println(subSearch.getResults().toString());
-                    System.out.println("Vis:");
-                    for (NodePair pair : visRules.keySet()) {
-                        System.out.println(pair.toString() + "=" + visRules.get(pair).toString());
-                    }
-                    System.out.println("%-");
-                }
+//                HashMultimap<NodePair, NodePair> visRules = extractVisRules(node, subSearch.getResults());
+//                if (!visRules.isEmpty()) {
+//                    for (List<HBGNode> list : relatedNodes) {
+//                        System.out.println(list);
+//                    }
+//                    System.out.println("Vis:");
+//                    for (NodePair pair : visRules.keySet()) {
+//                        System.out.println(pair.toString() + "=" + visRules.get(pair).toString());
+//                    }
+//                    System.out.println("%-");
+//                }
 
             }
         }
@@ -188,7 +187,7 @@ public class HBGPreprocessor {
             System.out.println(file.toString());
             MyRawTraceProcessor rp = new MyRawTraceProcessor();
             HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), new DataTypeFactory().getDataType(dataType)).generateHappenBeforeGraph();
-            new HBGPreprocessor().preprocess(happenBeforeGraph, dataType);
+//            new HBGPreprocessor().preprocess(happenBeforeGraph, dataType);
         }
     }
 }

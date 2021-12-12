@@ -22,34 +22,52 @@ import static net.sourceforge.argparse4j.impl.Arguments.*;
 public class VisearchChecker {
     private String adt;
     private int threadNum = 8;
+    private long averageState = 0;
+    private boolean stateFilter = false;
+    public boolean isStateFilter = false;
 
     public VisearchChecker(String adt, int threadNum) {
         this.adt = adt;
         this.threadNum = threadNum;
     }
 
-    public boolean normalCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
+    public VisearchChecker(String adt, int threadNum, boolean stateFilter) {
+        this.adt = adt;
+        this.threadNum = threadNum;
+        this.stateFilter = stateFilter;
+    }
+
+    public boolean normalCheck(String input, SearchConfiguration configuration) {
         HappenBeforeGraph happenBeforeGraph = load(input);
         RuleTable ruleTable = null;
-        if (enablePreprocess) {
-            ruleTable = preprocess(happenBeforeGraph);
+        if (stateFilter) {
+            ruleTable = preprocess(happenBeforeGraph, configuration.getVisibilityType());
+            if (ruleTable.size() > 0) {
+                isStateFilter = true;
+            }
         }
         MinimalVisSearch vfs = new MinimalVisSearch(configuration);
         vfs.setRuleTable(ruleTable);
         vfs.init(happenBeforeGraph);
-        return vfs.checkConsistency();
+        boolean result = vfs.checkConsistency();
+        averageState += vfs.getStateExplored();
+        return result;
     }
 
-    public boolean multiThreadCheck(String input, SearchConfiguration configuration, boolean enablePreprocess) {
+    public boolean multiThreadCheck(String input, SearchConfiguration configuration) {
         if (threadNum == 1) {
-            return normalCheck(input, configuration, enablePreprocess);
+            return normalCheck(input, configuration);
         }
 
         HappenBeforeGraph happenBeforeGraph = load(input);
         RuleTable ruleTable = null;
-        if (enablePreprocess) {
-            ruleTable = preprocess(happenBeforeGraph);
+        if (stateFilter) {
+            ruleTable = preprocess(happenBeforeGraph, configuration.getVisibilityType());
+            if (ruleTable.size() == 0) {
+                isStateFilter = false;
+            }
         }
+
         SearchConfiguration subConfiguration = new SearchConfiguration.Builder()
                                                                 .setVisibilityType(configuration.getVisibilityType())
                                                                 .setAdt(configuration.getAdt())
@@ -63,19 +81,27 @@ public class VisearchChecker {
                                                                 .setSearchLimit(-1)
                                                                 .build();
         MinimalVisSearch subVfs = new MinimalVisSearch(subConfiguration);
+//        subVfs.setRuleTable(ruleTable);
         subVfs.init(happenBeforeGraph);
         boolean result = subVfs.checkConsistency();
         if (subVfs.isExit()) {
+            averageState += subVfs.getStateExplored();
             return result;
         }
         List<SearchState> states = subVfs.getAllSearchState();
         MultiThreadSearch multiThreadSearch = new MultiThreadSearch(happenBeforeGraph, configuration, threadNum);
         multiThreadSearch.setRuleTable(ruleTable);
-        return multiThreadSearch.startSearch(states);
+        result = multiThreadSearch.startSearch(states);
+        averageState += multiThreadSearch.getStateExplored();
+        return result;
     }
 
-    protected RuleTable preprocess(HappenBeforeGraph happenBeforeGraph) {
-        RuleTable ruleTable = new HBGPreprocessor().preprocess(happenBeforeGraph, adt);
+    public long getAverageState() {
+        return averageState;
+    }
+
+    protected RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, VisibilityType visibilityType) {
+        RuleTable ruleTable = new HBGPreprocessor().preprocess(happenBeforeGraph, adt, visibilityType);
         return ruleTable;
     }
 
@@ -178,7 +204,7 @@ public class VisearchChecker {
                 .setFindAllAbstractExecution(false)
                 .build();
 
-        return multiThreadCheck(filename, configuration, false);
+        return multiThreadCheck(filename, configuration);
     }
 
     public List<String> filter(String filename) throws Exception {
@@ -193,6 +219,7 @@ public class VisearchChecker {
     }
 
     public String measureVisibility(String filename) throws Exception {
+        int states = 0;
         for (int i = 0; i < 6; i++) {
             boolean result = testTrace(filename, VisibilityType.values()[i]);
             if (result) {

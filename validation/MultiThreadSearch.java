@@ -16,6 +16,7 @@ public class MultiThreadSearch {
     private List<SearchThread> searchThreads = new ArrayList<>();
     private RuleTable ruleTable = null;
     private int searchThreadNum = 16;
+    private int stateExplored = 0;
 
     public MultiThreadSearch(HappenBeforeGraph happenBeforeGraph, SearchConfiguration configuration, int threadNum) {
         MultiThreadSearch.happenBeforeGraph = happenBeforeGraph;
@@ -46,11 +47,16 @@ public class MultiThreadSearch {
         for (SearchThread search : searchThreads) {
             search.stop();
         }
+        stateExplored = searchLock.getStateExplored();
         return searchLock.getResult();
     }
 
     public void setRuleTable(RuleTable ruleTable) {
         this.ruleTable = ruleTable;
+    }
+
+    public int getStateExplored() {
+        return stateExplored;
     }
 
     public static void main(String[] args) throws Exception {
@@ -61,6 +67,7 @@ public class MultiThreadSearch {
 
 class SearchLock {
     private final int size;
+    private int stateExplored = 0;
     private AtomicBoolean satisfication = new AtomicBoolean(false);
     private AtomicInteger finished = new AtomicInteger(0);
 
@@ -85,6 +92,14 @@ class SearchLock {
     public boolean getResult() {
         return satisfication.get();
     }
+
+    public void addStateExplored(int explored) {
+        stateExplored += explored;
+    }
+
+    public int getStateExplored() {
+        return stateExplored;
+    }
 }
 
 class SearchThread implements Runnable {
@@ -106,6 +121,8 @@ class SearchThread implements Runnable {
 
     public void stop() {
         visSearch.stopSearch();
+//        System.out.println(visSearch.getStateExplored());
+        searchLock.addStateExplored(visSearch.getStateExplored());
     }
 
     public boolean isExit() {

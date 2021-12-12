@@ -54,7 +54,7 @@ public class RiakSet extends AbstractDataType {
                 return true;
             }
             Integer ele = (Integer) src.getArguments().get(0);
-            if (/*dest.getOperationType() == OPERATION_TYPE.UPDATE &&*/ dest.getArguments().size() > 0 && dest.getArguments().get(0).equals(ele)) {
+            if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                 return true;
             } else {
                 return false;
