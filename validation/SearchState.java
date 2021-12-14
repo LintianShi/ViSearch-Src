@@ -60,10 +60,10 @@ public class SearchState implements Serializable, Comparable<SearchState> {
         return newStates;
     }
 
-    public List<HBGNode> nextVisibility() {
+    public List<HBGNode> nextVisibility(RuleTable ruleTable) {
         if (manualRecurse == null) {
             visibleNodes = getVisibleNodes();
-            List<HBGNode> candidateNodes = getCandinateNodes(visibleNodes);
+            List<HBGNode> candidateNodes = getCandinateNodes(visibleNodes, ruleTable);
             this.manualRecurse = new ManualRecurse(candidateNodes);
         }
         List<HBGNode> subset = null;
@@ -129,7 +129,7 @@ public class SearchState implements Serializable, Comparable<SearchState> {
         return visibleNodes;
     }
 
-    private List<HBGNode> getCandinateNodes(Set<HBGNode> visibleNodes) {
+    private List<HBGNode> getCandinateNodes(Set<HBGNode> visibleNodes, RuleTable ruleTable) {
         List<HBGNode> candidate = new ArrayList<>();
         if (visibilityType == VisibilityType.COMPLETE) {
             ;
@@ -144,6 +144,20 @@ public class SearchState implements Serializable, Comparable<SearchState> {
                 }
             }
         }
+        if (ruleTable == null || ruleTable.size() == 0) {
+            return candidate;
+        }
+
+        HBGNode visNode = linearization.getLast();
+        Set<NodePair> lin = linearization.extractHBRelation();
+        for (HBGNode node : candidate) {
+            if (ruleTable.visibilityFilter(lin, new NodePair(visNode, node))) {
+                candidate.remove(node);
+            }
+            if (ruleTable.visibilityFilter(lin, new NodePair(node,  visNode))) {
+                visibleNodes.add(node);
+            }
+        }
         return candidate;
     }
 
@@ -156,31 +170,18 @@ public class SearchState implements Serializable, Comparable<SearchState> {
     }
 
     public Set<NodePair> extractHBRelation() {
-        Set<NodePair> hbs = new HashSet<>();
-        for (int i = 1; i < linearization.size(); i++) {
-            for (int j = 0; j < i; j++) {
-                if (linearization.get(j).getThreadId() != linearization.get(i).getThreadId()) {
-                    hbs.add(new NodePair(linearization.get(j), linearization.get(i)));
-                }
-            }
-        }
-        return hbs;
+        return linearization.extractHBRelation();
     }
 
     public Set<NodePair> extractVisRelation(HBGNode visNode) {
         Set<NodePair> vis = new HashSet<>();
-        for (HBGNode node : linearization) {
-            if (node.equals(visNode)) {
-                Set<HBGNode> visSet = visibility.getNodeVisibility(node);
-                for (int i = 0; i < linearization.indexOf(node); i++) {
-                    HBGNode prevNode = linearization.get(i);
-                    if (!visSet.contains(prevNode)) {
-                        vis.add(new NodePair(node, prevNode));
-                    } else if (prevNode.getThreadId() != node.getThreadId()) {
-                        vis.add(new NodePair(prevNode, node));
-                    }
-                }
-                break;
+        Set<HBGNode> visSet = visibility.getNodeVisibility(visNode);
+        for (int i = 0; i < linearization.indexOf(visNode); i++) {
+            HBGNode prevNode = linearization.get(i);
+            if (!visSet.contains(prevNode)) {
+                vis.add(new NodePair(visNode, prevNode));
+            } else if (prevNode.getThreadId() != visNode.getThreadId()) {
+                vis.add(new NodePair(prevNode, visNode));
             }
         }
         return vis;

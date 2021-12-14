@@ -7,18 +7,28 @@ import history.Linearization;
 import com.google.common.collect.HashMultimap;
 import history.HBGNode;
 import traceprocessing.MyRawTraceProcessor;
+import util.NodePair;
 import validation.HBGPreprocessor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
+import java.util.Set;
 
 public class RuleTable {
-    private HashMultimap<HBGNode, HBGNode> linRules;
-    private HashMultimap<HBGNode, HBGNode> visRules;
+    private HashMultimap<HBGNode, HBGNode> linRules = HashMultimap.create();
+    private HashMultimap<NodePair, NodePair> visRules = HashMultimap.create();
 
-    public RuleTable(HashMultimap<HBGNode, HBGNode> rules) {
-        this.linRules = rules;
+    public RuleTable() {
+        ;
+    }
+
+    public void insertVisRuleBulk(HashMultimap<NodePair, NodePair> rules) {
+        visRules.putAll(rules);
+    }
+
+    public void insertLinRuleBulk(HashMultimap<HBGNode, HBGNode> rules) {
+        linRules.putAll(rules);
     }
 
     public boolean linearizationFilter(Linearization linearization, HBGNode node) {
@@ -31,8 +41,18 @@ public class RuleTable {
         return true;
     }
 
+    public boolean visibilityFilter(Set<NodePair> lin, NodePair node) {
+        Set<NodePair> musthb = visRules.get(node);
+        for (NodePair pair : lin) {
+            if (!musthb.contains(pair)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public int size() {
-        return linRules.size();
+        return linRules.size() + visRules.size();
     }
 
     public static void main(String[] args) throws Exception {
@@ -47,8 +67,8 @@ public class RuleTable {
         long a = 0;
         long b = 0;
         for (File file : files) {
-            VisearchChecker checker = new VisearchChecker("set", 1, false);
-            VisearchChecker checker1 = new VisearchChecker("set", 1, true);
+//            VisearchChecker checker = new VisearchChecker("set", 1, false);
+            VisearchChecker checker1 = new VisearchChecker("set", 4, true);
             i++;
             if (i == 10000) {
                 break;
@@ -59,12 +79,12 @@ public class RuleTable {
 //            System.out.println(checker.measureVisibility(file.toString()));
 //            System.out.println(checker1.measureVisibility(file.toString()));
 
-            checker1.measureVisibility(file.toString());
+            System.out.println(file.toString() + ":" + checker1.measureVisibility(file.toString()));
 //            System.out.println(file.toString());
-            if (checker1.isStateFilter) {
-                checker.measureVisibility(file.toString());
-                System.out.println(checker.getAverageState() + "," + checker1.getAverageState());
-            }
+//            if (checker1.isStateFilter) {
+//                checker.measureVisibility(file.toString());
+//                System.out.println(checker.getAverageState() + "," + checker1.getAverageState());
+//            }
 
         }
     }

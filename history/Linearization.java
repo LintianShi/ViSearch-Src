@@ -2,6 +2,7 @@ package history;
 
 import datatype.OperationTypes;
 import rule.RuleTable;
+import util.NodePair;
 
 import java.io.Serializable;
 import java.util.*;
@@ -12,6 +13,18 @@ public class Linearization implements Serializable, Iterable<HBGNode> {
 
     public Linearization() {
         ;
+    }
+
+    public Set<NodePair> extractHBRelation() {
+        Set<NodePair> hbs = new HashSet<>();
+        for (int i = 1; i < lin.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                if (lin.get(j).getThreadId() != lin.get(i).getThreadId()) {
+                    hbs.add(new NodePair(lin.get(j), lin.get(i)));
+                }
+            }
+        }
+        return hbs;
     }
 
     public void add(HBGNode node) {

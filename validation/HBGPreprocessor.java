@@ -122,6 +122,7 @@ public class HBGPreprocessor {
 
     public RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, String dataType, VisibilityType visibilityType) {
         AbstractDataType adt = new DataTypeFactory().getDataType(dataType);
+        RuleTable ruleTable = new RuleTable();
         HashMultimap<HBGNode, HBGNode> linRules = HashMultimap.create();
         for (HBGNode node : happenBeforeGraph) {
             if (adt.isReadCluster(node.getInvocation())) {
@@ -146,7 +147,7 @@ public class HBGPreprocessor {
                 subSearch.init(subHBGraph);
                 subSearch.checkConsistency();
                 extractLinRules(subSearch.getResults(), linRules);
-//                HashMultimap<NodePair, NodePair> visRules = extractVisRules(node, subSearch.getResults());
+                HashMultimap<NodePair, NodePair> visRules = extractVisRules(node, subSearch.getResults());
 //                if (!visRules.isEmpty()) {
 //                    for (List<HBGNode> list : relatedNodes) {
 //                        System.out.println(list);
@@ -157,10 +158,10 @@ public class HBGPreprocessor {
 //                    }
 //                    System.out.println("%-");
 //                }
-
+                ruleTable.insertVisRuleBulk(visRules);
             }
         }
-        RuleTable ruleTable = new RuleTable(linRules);
+        ruleTable.insertLinRuleBulk(linRules);
         return ruleTable;
     }
 

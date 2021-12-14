@@ -60,7 +60,7 @@ public class MinimalVisSearch {
                 && (configuration.getQueueLimit() == -1 || stateQueue.size() < configuration.getQueueLimit())) {
             SearchState state = stateQueue.poll();
             List<HBGNode> subset = null;
-            while ((subset = state.nextVisibility()) != null && !exit) {
+            while ((subset = state.nextVisibility(ruleTable)) != null && !exit) {
                 stateExplored++;
                 if (executeCheck(adt, state)) {
                     if (state.isComplete()) {
