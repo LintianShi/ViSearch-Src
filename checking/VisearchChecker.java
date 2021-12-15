@@ -23,7 +23,7 @@ public class VisearchChecker {
     private String adt;
     private int threadNum = 8;
     private long averageState = 0;
-    private boolean stateFilter = false;
+    private boolean stateFilter = true;
     public boolean isStateFilter = false;
 
     public VisearchChecker(String adt, int threadNum) {
@@ -42,15 +42,15 @@ public class VisearchChecker {
         RuleTable ruleTable = null;
         if (stateFilter) {
             ruleTable = preprocess(happenBeforeGraph, configuration.getVisibilityType());
-            if (ruleTable.size() > 0) {
-                isStateFilter = true;
-            }
+            // if (ruleTable.size() > 0) {
+            //     isStateFilter = true;
+            // }
         }
         MinimalVisSearch vfs = new MinimalVisSearch(configuration);
         vfs.setRuleTable(ruleTable);
         vfs.init(happenBeforeGraph);
         boolean result = vfs.checkConsistency();
-        averageState += vfs.getStateExplored();
+        // averageState += vfs.getStateExplored();
         return result;
     }
 
@@ -63,9 +63,9 @@ public class VisearchChecker {
         RuleTable ruleTable = null;
         if (stateFilter) {
             ruleTable = preprocess(happenBeforeGraph, configuration.getVisibilityType());
-            if (ruleTable.size() == 0) {
-                isStateFilter = false;
-            }
+            // if (ruleTable.size() == 0) {
+            //     isStateFilter = false;
+            // }
         }
 
         SearchConfiguration subConfiguration = new SearchConfiguration.Builder()
@@ -85,14 +85,14 @@ public class VisearchChecker {
         subVfs.init(happenBeforeGraph);
         boolean result = subVfs.checkConsistency();
         if (subVfs.isExit()) {
-            averageState += subVfs.getStateExplored();
+            // averageState += subVfs.getStateExplored();
             return result;
         }
         List<SearchState> states = subVfs.getAllSearchState();
         MultiThreadSearch multiThreadSearch = new MultiThreadSearch(happenBeforeGraph, configuration, threadNum);
         multiThreadSearch.setRuleTable(ruleTable);
         result = multiThreadSearch.startSearch(states);
-        averageState += multiThreadSearch.getStateExplored();
+        //averageState += multiThreadSearch.getStateExplored();
         return result;
     }
 

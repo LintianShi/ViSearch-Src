@@ -42,6 +42,9 @@ public class RuleTable {
     }
 
     public boolean visibilityFilter(Set<NodePair> lin, NodePair node) {
+        if (!visRules.containsKey(node)) {
+            return false;
+        }
         Set<NodePair> musthb = visRules.get(node);
         for (NodePair pair : lin) {
             if (!musthb.contains(pair)) {

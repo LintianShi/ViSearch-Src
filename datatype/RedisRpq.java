@@ -63,9 +63,6 @@ public class RedisRpq extends AbstractDataType {
                     return false;
                 }
             } else if (src.getMethodName().equals("max")) {
-                if (src.getRetValue().equals("null")) {
-                    return false;
-                }
                 Integer ele = Integer.parseInt(src.getRetValue().split(" ")[0]);
                 if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                     return true;
@@ -73,16 +70,19 @@ public class RedisRpq extends AbstractDataType {
                     return false;
                 }
             } else {
-                return true;
+                return false;
             }
         } else {
-            return true;
+            return false;
         }
     }
 
     @Override
     public boolean isReadCluster(Invocation invocation) {
         if (invocation.getMethodName().equals("score")) {
+            return true;
+        }
+        if (invocation.getMethodName().equals("max") && !invocation.getRetValue().equals("null")) {
             return true;
         }
         return false;
@@ -103,10 +103,7 @@ public class RedisRpq extends AbstractDataType {
             invocation.addArguments(Integer.parseInt(record.getArgument(0)));
             invocation.addArguments(Integer.parseInt(record.getArgument(1)));
         } else if (record.getOperationName().equals("max")) {
-            String ret = record.getRetValue();
-            if (!ret.equals("null")) {
-                invocation.setRetValue(ret.split(" ")[1]);
-            }
+            ;
         } else if (record.getOperationName().equals("score")) {
             invocation.addArguments(Integer.parseInt(record.getArgument(0)));
         } else {
@@ -231,7 +228,7 @@ public class RedisRpq extends AbstractDataType {
             Integer ele = max.getEle();
             //return "rwfzmax:" + Integer.toString(max.getEle()) + ":" + val.stripTrailingZeros().toPlainString();
             //return ele.toString() + " " + val.toString();
-            return val.toString();
+            return ele.toString() + " " + val.toString();
         }
     }
 

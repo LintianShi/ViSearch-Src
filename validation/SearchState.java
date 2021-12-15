@@ -150,14 +150,16 @@ public class SearchState implements Serializable, Comparable<SearchState> {
 
         HBGNode visNode = linearization.getLast();
         Set<NodePair> lin = linearization.extractHBRelation();
+        Set<HBGNode> removeSet = new HashSet<>();
         for (HBGNode node : candidate) {
             if (ruleTable.visibilityFilter(lin, new NodePair(visNode, node))) {
-                candidate.remove(node);
+                removeSet.add(node);
             }
             if (ruleTable.visibilityFilter(lin, new NodePair(node,  visNode))) {
                 visibleNodes.add(node);
             }
         }
+        candidate.removeAll(removeSet);
         return candidate;
     }
 
