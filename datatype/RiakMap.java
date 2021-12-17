@@ -38,63 +38,16 @@ public class RiakMap extends AbstractDataType {
         }
     }
 
-//    public List<List<HBGNode>> getRelatedOperations(HBGNode node, HappenBeforeGraph happenBeforeGraph) {
-//        List<List<HBGNode>> lists = new ArrayList<>();
-//        Set<Integer> keys = new HashSet<>();
-//        for (HBGNode startNode : happenBeforeGraph.getStartNodes()) {
-//            List<HBGNode> tempList = new ArrayList<>();
-//            HBGNode temp = startNode;
-//            while (happenBeforeGraph.getPo(temp) != null) {
-//                if (this.isRelated(node.getInvocation(), temp.getInvocation())) {
-//                    if (node.getInvocation().getMethodName().equals("containsValue")) {
-//                        keys.add((Integer) temp.getInvocation().getArguments().get(0));
-//                    } else {
-//                        tempList.add(temp.clone());
-//                    }
-//                }
-//                temp = happenBeforeGraph.getPo(temp);
-//            }
-//            if (tempList.size() > 0) {
-//                lists.add(tempList);
-//            }
-//        }
-//        if (!node.getInvocation().getMethodName().equals("containsValue")) {
-//            return lists;
-//        }
-//        for (HBGNode startNode : happenBeforeGraph.getStartNodes()) {
-//            List<HBGNode> tempList = new ArrayList<>();
-//            HBGNode temp = startNode;
-//            while (happenBeforeGraph.getPo(temp) != null) {
-//                if (isRelated(node.getInvocation(), temp.getInvocation(), keys)) {
-//                    tempList.add(temp.clone());
-//                }
-//                temp = happenBeforeGraph.getPo(temp);
-//            }
-//            if (tempList.size() > 0) {
-//                lists.add(tempList);
-//            }
-//        }
-//        System.out.println(lists.toString());
-//        return lists;
-//    }
-
-    private boolean isRelated(Invocation src, Invocation dest, Set<Integer> keys) {
-        if (!src.getMethodName().equals("containsValue")) {
-            return false;
-        } else {
-            if (src.getId() == dest.getId()) {
-                return true;
-            } else if (dest.getMethodName().equals("put") && keys.contains((Integer) dest.getArguments().get(0))) {
-                return true;
-            }
+    @Override
+    public boolean isReadCluster(Invocation invocation) {
+        if (invocation.getMethodName().equals("get")) {
+            return true;
         }
         return false;
     }
 
     protected boolean isRelated(Invocation src, Invocation dest) {
-        if (src.getOperationType() == OPERATION_TYPE.UPDATE) {
-            return false;
-        } else if (src.getOperationType() == OPERATION_TYPE.QUERY) {
+        if (src.getOperationType() == OPERATION_TYPE.QUERY) {
             if (src.getMethodName().equals("get")) {
                 if (src.getId() == dest.getId()) {
                     return true;
@@ -102,19 +55,10 @@ public class RiakMap extends AbstractDataType {
                 Integer key = (Integer) src.getArguments().get(0);
                 if (dest.getMethodName().equals("put") && dest.getArguments().get(0).equals(key)) {
                     return true;
-                } else {
-                    return false;
-                }
-            } else if (src.getMethodName().equals("containsValue")) {
-                Integer value = (Integer) src.getArguments().get(0);
-                if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(1).equals(value)) {
-                    return true;
-                } else {
-                    return false;
-                }
+                } 
             }
         }
-        return true;
+        return false;
     }
 
     public Invocation generateInvocation(Record record) {

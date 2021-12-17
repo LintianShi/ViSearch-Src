@@ -49,9 +49,7 @@ public class RedisRpq extends AbstractDataType {
     }
 
     protected boolean isRelated(Invocation src, Invocation dest) {
-        if (src.getOperationType() == OPERATION_TYPE.UPDATE) {
-            return false;
-        } else if (src.getOperationType() == OPERATION_TYPE.QUERY) {
+        if (src.getOperationType() == OPERATION_TYPE.QUERY) {
             if (src.getId() == dest.getId()) {
                 return true;
             }
@@ -59,22 +57,15 @@ public class RedisRpq extends AbstractDataType {
                 Integer ele = (Integer) src.getArguments().get(0);
                 if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                     return true;
-                } else {
-                    return false;
-                }
+                } 
             } else if (src.getMethodName().equals("max")) {
                 Integer ele = Integer.parseInt(src.getRetValue().split(" ")[0]);
                 if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                     return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
+                } 
             }
-        } else {
-            return false;
-        }
+        } 
+        return false;
     }
 
     @Override
