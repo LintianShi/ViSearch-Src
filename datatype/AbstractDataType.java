@@ -44,6 +44,8 @@ public abstract class AbstractDataType {
         }
     }
 
+    public abstract boolean isDummyOperation(HBGNode node);
+
     protected abstract boolean isRelated(Invocation src, Invocation dest);
 
     public abstract void reset();

@@ -182,11 +182,14 @@ public class VisearchChecker {
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         System.out.println("Starting " + df.format(new Date()));
         for (File file : files) {
+            i++;
+            if (i < 10000) {
+                continue;
+            }
             String result = measureVisibility(file.toString());
             if (!result.equals("COMPLETE")) {
                 System.out.println(i + ":" + file + ":" + result);
             }
-            i++;
             if (i % 10000 == 0) {
                 System.out.println("Processing " + df.format(new Date()));
             }
