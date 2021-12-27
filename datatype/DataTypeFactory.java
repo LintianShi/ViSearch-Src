@@ -8,8 +8,6 @@ public class DataTypeFactory {
             return new RiakMap();
         } else if (dataType.equals("rpq")) {
             return new RedisRpq();
-        } else if (dataType.equals("list")) {
-            return new RedisList();
         } else {
             return null;
         }

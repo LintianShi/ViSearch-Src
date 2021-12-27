@@ -1,5 +1,6 @@
 package datatype;
 
+import history.HBGNode;
 import history.Invocation;
 import traceprocessing.Record;
 import datatype.OperationTypes.OPERATION_TYPE;
@@ -102,6 +103,18 @@ public class RedisRpq extends AbstractDataType {
         }
 
         return invocation;
+    }
+
+    @Override
+    public boolean isDummyOperation(HBGNode node) {
+        Invocation invocation = node.getInvocation();
+        if (invocation.getMethodName().equals("max") && invocation.getRetValue().equals("null")) {
+            return true;
+        }
+        if (invocation.getMethodName().equals("score") && invocation.getRetValue().equals("null")) {
+            return true;
+        }
+        return false;
     }
 
     public int hashCode() {

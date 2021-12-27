@@ -70,6 +70,18 @@ public class HappenBeforeGraph implements Iterable<HBGNode>, Cloneable {
     public List<HBGNode> getStartNodes() {
         return startNodes;
     }
+
+    public void removeNode(HBGNode node) {
+        nodes.remove(node.getId());
+    }
+
+    @Override
+    public String toString() {
+        return "HappenBeforeGraph{" +
+                "startNodes=" + startNodes +
+                ", nodes=" + nodes +
+                '}';
+    }
 }
 
 

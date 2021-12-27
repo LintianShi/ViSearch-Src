@@ -1,5 +1,6 @@
 package datatype;
 
+import history.HBGNode;
 import history.Invocation;
 import traceprocessing.Record;
 import datatype.OperationTypes.OPERATION_TYPE;
@@ -55,6 +56,18 @@ public class RiakSet extends AbstractDataType {
             if (dest.getOperationType() == OPERATION_TYPE.UPDATE && dest.getArguments().get(0).equals(ele)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isDummyOperation(HBGNode node) {
+        Invocation invocation = node.getInvocation();
+        if (invocation.getMethodName().equals("size") && invocation.getRetValue().equals("0")) {
+            return true;
+        }
+        if (invocation.getMethodName().equals("contains") && invocation.getRetValue().equals("false")) {
+            return true;
         }
         return false;
     }

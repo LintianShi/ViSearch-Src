@@ -1,5 +1,6 @@
 package validation;
 
+import checking.VisearchChecker;
 import com.google.common.collect.Multimap;
 import history.VisibilityType;
 import com.google.common.collect.HashMultimap;
@@ -17,6 +18,33 @@ import java.io.FileNotFoundException;
 import java.util.*;
 
 public class HBGPreprocessor {
+    private boolean preprocessOneOperation(HappenBeforeGraph happenBeforeGraph, AbstractDataType adt) {
+        HBGNode dummy = null;
+        for (HBGNode node : happenBeforeGraph.getStartNodes()) {
+            if (adt.isDummyOperation(node)) {
+                dummy = node;
+                break;
+            }
+        }
+        if (dummy != null) {
+            HBGNode next = dummy.getNext();
+            next.setPrev(null);
+            happenBeforeGraph.getStartNodes().remove(dummy);
+            happenBeforeGraph.getStartNodes().add(next);
+            happenBeforeGraph.removeNode(dummy);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void preprocess(HappenBeforeGraph happenBeforeGraph, String dataType) {
+        AbstractDataType adt = new DataTypeFactory().getDataType(dataType);
+        while (preprocessOneOperation(happenBeforeGraph, adt)) {
+            ;
+        }
+    }
+
     private List<NodePair> extractCommonHBRelation(List<Set<NodePair>> hbs) {
         List<NodePair> results = new ArrayList<>();
         HashMap<NodePair, Integer> map = new HashMap<>();
@@ -120,7 +148,7 @@ public class HBGPreprocessor {
     }
 
 
-    public RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, String dataType, VisibilityType visibilityType) {
+    public RuleTable extractRules(HappenBeforeGraph happenBeforeGraph, String dataType, VisibilityType visibilityType) {
         AbstractDataType adt = new DataTypeFactory().getDataType(dataType);
         RuleTable ruleTable = new RuleTable();
         HashMultimap<HBGNode, HBGNode> linRules = HashMultimap.create();
@@ -166,30 +194,25 @@ public class HBGPreprocessor {
     }
 
     public static void main(String args[]) throws Exception {
-//        Multimap<Integer, Integer> map = HashMultimap.create();
-//        map.put(1, 1);
-//        map.put(1, 2);
-//        map.remove(1, 2);
-//        map.remove(1, 1);
-//        System.out.println(map.toString());
-        File baseFile = new File("D:\\set311_with_size\\result");
-        String dataType = "set";
-        if (baseFile.isFile() || !baseFile.exists()) {
-            throw new FileNotFoundException();
-        }
-        File[] files = baseFile.listFiles();
-        int i = 0;
-        for (File file : files) {
-            i++;
-            if (i == 1000) {
-                return;
-            }
-
-            System.out.println(file.toString());
-            MyRawTraceProcessor rp = new MyRawTraceProcessor();
-            HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), new DataTypeFactory().getDataType(dataType)).generateHappenBeforeGraph();
-//            new HBGPreprocessor().preprocess(happenBeforeGraph, dataType);
-        }
+//        File baseFile = new File("D:\\set311_with_size\\result");
+//        String dataType = "set";
+//        if (baseFile.isFile() || !baseFile.exists()) {
+//            throw new FileNotFoundException();
+//        }
+//        File[] files = baseFile.listFiles();
+//        int i = 0;
+//        for (File file : files) {
+//            i++;
+//            if (i == 1000) {
+//                return;
+//            }
+//
+//            System.out.println(file.toString());
+//            MyRawTraceProcessor rp = new MyRawTraceProcessor();
+//            HappenBeforeGraph happenBeforeGraph = rp.generateProgram(file.toString(), new DataTypeFactory().getDataType(dataType)).generateHappenBeforeGraph();
+//        }
+        VisearchChecker checker = new VisearchChecker("map", 4, true);
+        System.out.println(checker.measureVisibility("C:\\Users\\dell\\Desktop\\test.trc"));;
     }
 }
 

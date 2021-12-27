@@ -1,5 +1,6 @@
 package datatype;
 
+import history.HBGNode;
 import history.Invocation;
 import traceprocessing.Record;
 import datatype.OperationTypes.OPERATION_TYPE;
@@ -80,6 +81,18 @@ public class RiakMap extends AbstractDataType {
             System.out.println("Unknown operation");
         }
         return invocation;
+    }
+
+    @Override
+    public boolean isDummyOperation(HBGNode node) {
+        Invocation invocation = node.getInvocation();
+        if (invocation.getMethodName().equals("size") && invocation.getRetValue().equals("0")) {
+            return true;
+        }
+        if (invocation.getMethodName().equals("get") && invocation.getRetValue().equals("null")) {
+            return true;
+        }
+        return false;
     }
 
     public void reset() {

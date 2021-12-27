@@ -37,11 +37,10 @@ public class VisearchChecker {
         this.stateFilter = stateFilter;
     }
 
-    public boolean normalCheck(String input, SearchConfiguration configuration) {
-        HappenBeforeGraph happenBeforeGraph = load(input);
+    public boolean normalCheck(HappenBeforeGraph happenBeforeGraph, SearchConfiguration configuration) {
         RuleTable ruleTable = null;
         if (stateFilter) {
-            ruleTable = preprocess(happenBeforeGraph, configuration.getVisibilityType());
+            ruleTable = extractRules(happenBeforeGraph, configuration.getVisibilityType());
             // if (ruleTable.size() > 0) {
             //     isStateFilter = true;
             // }
@@ -54,15 +53,15 @@ public class VisearchChecker {
         return result;
     }
 
-    public boolean multiThreadCheck(String input, SearchConfiguration configuration) {
+    public boolean multiThreadCheck(HappenBeforeGraph happenBeforeGraph, SearchConfiguration configuration) {
         if (threadNum == 1) {
-            return normalCheck(input, configuration);
+            return normalCheck(happenBeforeGraph, configuration);
         }
 
-        HappenBeforeGraph happenBeforeGraph = load(input);
+        System.out.println(happenBeforeGraph.toString());
         RuleTable ruleTable = null;
         if (stateFilter) {
-            ruleTable = preprocess(happenBeforeGraph, configuration.getVisibilityType());
+            ruleTable = extractRules(happenBeforeGraph, configuration.getVisibilityType());
             // if (ruleTable.size() == 0) {
             //     isStateFilter = false;
             // }
@@ -100,9 +99,13 @@ public class VisearchChecker {
         return averageState;
     }
 
-    protected RuleTable preprocess(HappenBeforeGraph happenBeforeGraph, VisibilityType visibilityType) {
-        RuleTable ruleTable = new HBGPreprocessor().preprocess(happenBeforeGraph, adt, visibilityType);
+    protected RuleTable extractRules(HappenBeforeGraph happenBeforeGraph, VisibilityType visibilityType) {
+        RuleTable ruleTable = new HBGPreprocessor().extractRules(happenBeforeGraph, adt, visibilityType);
         return ruleTable;
+    }
+
+    protected void removeDummyOperations(HappenBeforeGraph happenBeforeGraph) {
+        new HBGPreprocessor().preprocess(happenBeforeGraph, adt);
     }
 
     protected HappenBeforeGraph load(String filename) {
@@ -207,7 +210,9 @@ public class VisearchChecker {
                 .setFindAllAbstractExecution(false)
                 .build();
 
-        return multiThreadCheck(filename, configuration);
+        HappenBeforeGraph happenBeforeGraph = load(filename);
+        removeDummyOperations(happenBeforeGraph);
+        return multiThreadCheck(happenBeforeGraph, configuration);
     }
 
     public List<String> filter(String filename) throws Exception {
